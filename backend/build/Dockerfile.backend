@@ -1,0 +1,8 @@
+FROM ubuntu:22.04
+
+COPY target/auction-backend /auction-backend
+
+EXPOSE 8080
+
+CMD ["/auction-backend"]
+
