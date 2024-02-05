@@ -63,8 +63,9 @@ export const MainLayout = ({ children }) => {
 
           <Menu
             mode="inline"
-            defaultSelectedKeys={['/']}
-            defaultOpenKeys={['auctions']}
+            defaultSelectedKeys={location.pathname}
+            selectedKeys={[location.pathname]}
+            defaultOpenKeys={'auctions'}
             style={{
               height: '100%',
               borderRight: 0,
