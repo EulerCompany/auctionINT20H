@@ -1,13 +1,26 @@
 import React from 'react'
 import { NotificationOutlined } from '@ant-design/icons';
-import { Layout, Menu, theme } from 'antd';
+import { Button, Layout, Menu, theme } from 'antd';
 import { NavLink, useLocation} from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { isAuth, logout } from '../redux/features/auth/authSlice';
 
 const { Header, Footer, Content, Sider } = Layout;
 
 
 export const MainLayout = ({ children }) => {
+
+  // const checkIsAuth = useSelector(isAuth)
+  const checkIsAuth = true
+
+  const dispatch = useDispatch()
+
   const location = useLocation();
+
+  const logoutHandler = () => {
+    dispatch(logout())
+    window.localStorage.removeItem('token')
+  }
 
   const {
     token: { colorBgContainer, borderRadiusLG },
@@ -27,7 +40,8 @@ export const MainLayout = ({ children }) => {
         <a className='text-white' href='/'> AUCTION 423 </a>
         </div>
 
-        <Menu
+        {!checkIsAuth && <Menu
+        className='w-2/3 flex justify-end'
           theme="dark"
           mode="horizontal"
           selectedKeys = {[location.pathname]}
@@ -42,20 +56,17 @@ export const MainLayout = ({ children }) => {
             key: '/registration',
             label: <NavLink to={'/registration'} >Sign Up</NavLink>,
           },
-          {
-            key: '/me',
-            label: <NavLink to={'/me'}  >Me</NavLink>,
-          },
           ]}
 
           style={{
             alignItems: 'center',
             minWidth: 0,
-          }}/>
+          }}/> }
+         {checkIsAuth && <Button type="primary" onClick={logoutHandler} >Log out</Button> }
       </Header>
 
       <Layout>
-        <Sider
+      {checkIsAuth && <Sider
           width={200}
           style={{
             background: colorBgContainer,
@@ -65,15 +76,15 @@ export const MainLayout = ({ children }) => {
             mode="inline"
             defaultSelectedKeys={location.pathname}
             selectedKeys={[location.pathname]}
-            defaultOpenKeys={'auctions'}
+            defaultOpenKeys={['auctions']}
             style={{
               height: '100%',
               borderRight: 0,
             }}
             items={[{
-              key: `auctions`,
+              key: 'auctions',
               icon: React.createElement(NotificationOutlined),
-              label: `Auctions`,
+              label: 'Auctions',
               children: 
               [{
                   key: '/',
@@ -85,7 +96,7 @@ export const MainLayout = ({ children }) => {
               }],
           },
           ]}/>
-        </Sider>
+        </Sider>}
 
         <Layout
           style={{
@@ -96,7 +107,7 @@ export const MainLayout = ({ children }) => {
             style={{
               padding: 24,
               margin: 0,
-              minHeight: 800,
+              minHeight: 780,
               background: colorBgContainer,
               borderRadius: borderRadiusLG,
             }}>

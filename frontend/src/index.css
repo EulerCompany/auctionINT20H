@@ -7,22 +7,7 @@
     background: #f5f5f5;
     font-family: 'Oswald', sans-serif;
     min-height: 100vh;
+    padding: 0;
+    margin: 0;
   }
-
-  #components-form-demo-normal-login .login-form {
-    max-width: 300px;
-  }
-
-  #components-form-demo-normal-login .login-form-forgot {
-    float: right;
-  }
-
-  #components-form-demo-normal-login .ant-col-rtl .login-form-forgot {
-    float: left;
-  }
-
-  #components-form-demo-normal-login .login-form-button {
-    width: 100%;
-  }
-  
 }

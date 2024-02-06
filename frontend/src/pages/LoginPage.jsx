@@ -1,17 +1,53 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { LockOutlined, UserOutlined } from '@ant-design/icons'
-import { Button, Form, Input } from 'antd'
-import { NavLink } from 'react-router-dom'
+import { Button, Form, notification, Input } from 'antd'
+import { NavLink, useNavigate } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { isAuth, loginUser } from '../redux/features/auth/authSlice'
+
 
 export const LoginPage = () => {
 
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  // const checkIsAuth = useSelector(isAuth)
+  const checkIsAuth = true
+
+  const { status } = useSelector((state) => state.auth)
+
   const onFinish = (values) => {
+    try {
+      // dispatch(loginUser(values))
+    } catch (error) {
+      console.log(error)
+    }
     console.log('Received values of form: ', values);
+    form.resetFields()
   };
+
+  useEffect(() => {
+    if (status) {
+      openNotification('topRight')
+    }
+    if (checkIsAuth) {
+      navigate('/')
+    }
+  }, [status, checkIsAuth, navigate, openNotification])
+
+  const [api] = notification.useNotification();
+  const [form] = Form.useForm();
+
+  const openNotification = (placement) => {
+    api.info({
+      message: `Wow!`,
+      description: status,
+      placement,
+    })};
 
   return (
     <div className='flex justify-center'>
     <Form
+    form={form}
     name="login"
     className="login-form  w-3/12 pt-20"
     initialValues={{

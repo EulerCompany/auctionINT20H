@@ -3,8 +3,17 @@ import { Routes, Route } from 'react-router-dom'
 import { ListingPage } from './pages/ListingPage.jsx'
 import { LoginPage } from './pages/LoginPage.jsx'
 import { RegistrationPage } from './pages/RegistrationPage.jsx'
+import { useDispatch } from 'react-redux'
+import { useEffect } from 'react'
+import { getMe } from './redux/features/auth/authSlice.js'
 
 function App() {
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    // dispatch(getMe())
+  }, [dispatch])
+
   return (
   <MainLayout>
     <Routes>
