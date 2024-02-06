@@ -13,6 +13,9 @@ services:
       interval: 5s
       retries: 10
       timeout: 5s
+    volumes:
+      - ./mysql/initdb:/docker-entrypoint-initdb.d
+      - mysql-data:/var/lib/mysql
   backend:
     image: auction-backend
     ports:
@@ -20,6 +23,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+volumes:
+  mysql-data:
 
 
     
