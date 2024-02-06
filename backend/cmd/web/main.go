@@ -10,11 +10,12 @@ import (
 )
 
 type application struct {
+	user *UserModel
 }
 
 func main() {
 	addr := flag.String("addr", ":8080", "HTTP network address")
-    dsn := flag.String("dsn", "web:pass@tcp(db)/auction", "MySQL DSN")
+	dsn := flag.String("dsn", "root@/auction", "MySQL DSN")
 
 	flag.Parse()
 	db, err := openDB(*dsn)
@@ -23,7 +24,9 @@ func main() {
 	}
 	defer db.Close()
 
-	app := &application{}
+	app := &application{
+		user: &UserModel{db},
+    }
 
 	srv := &http.Server{
 		Addr:    *addr,

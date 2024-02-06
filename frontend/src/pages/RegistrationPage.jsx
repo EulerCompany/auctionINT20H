@@ -8,16 +8,14 @@ import { isAuth, registerUser } from '../redux/features/auth/authSlice'
 export const RegistrationPage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  // const checkIsAuth = useSelector(isAuth)
-  const checkIsAuth = false
 
-
+  const checkIsAuth = useSelector(isAuth)
 
   const { status } = useSelector((state) => state.auth)
 
   const onFinish = (values) => {
     try {
-      // dispatch(registerUser(values))
+       dispatch(registerUser(values))
     } catch (error) {
       console.log(error)
     }
@@ -27,7 +25,7 @@ export const RegistrationPage = () => {
 
   useEffect(() => {
     if (status) {
-      openNotification('topRight')
+      //openNotification('topRight')
     }
     if (checkIsAuth) {
       navigate('/')

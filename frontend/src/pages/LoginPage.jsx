@@ -10,14 +10,13 @@ export const LoginPage = () => {
 
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  // const checkIsAuth = useSelector(isAuth)
-  const checkIsAuth = false
+  const checkIsAuth = useSelector(isAuth)
 
   const { status } = useSelector((state) => state.auth)
 
   const onFinish = (values) => {
     try {
-      // dispatch(loginUser(values))
+      dispatch(loginUser(values))
     } catch (error) {
       console.log(error)
     }
@@ -27,7 +26,7 @@ export const LoginPage = () => {
 
   useEffect(() => {
     if (status) {
-      openNotification('topRight')
+      //openNotification('topRight')
     }
     if (checkIsAuth) {
       navigate('/')

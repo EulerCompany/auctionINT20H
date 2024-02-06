@@ -10,8 +10,7 @@ const { Header, Footer, Content, Sider } = Layout;
 
 export const MainLayout = ({ children }) => {
 
-  // const checkIsAuth = useSelector(isAuth)
-  const checkIsAuth = false
+  const checkIsAuth = useSelector(isAuth)
 
   const dispatch = useDispatch()
 
