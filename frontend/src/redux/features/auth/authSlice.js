@@ -71,7 +71,7 @@ export const authSlice = createSlice({
     reducers: {
         logout: (state) => {
             state.user = null
-            state.token = 'jnjbkbh'
+            state.token = null
             state.isLoading = false
             state.status = null
         }

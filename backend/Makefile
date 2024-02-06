@@ -11,7 +11,7 @@ build:
 
 .PHONY: build-image
 build-image: build
-	docker build -t auction-backend -f build/Dockerfile.backend .
+	sudo docker build -t auction-backend -f build/Dockerfile.backend .
 
 .PHONY: run
 run: build
@@ -19,11 +19,11 @@ run: build
 	
 .PHONY: compose-up
 compose-up: build-image
-	docker compose -f build/docker-compose.yaml up
+	sudo docker compose -f build/docker-compose.yaml up
 
 .PHONY: compose-down
 compose-down:
-	docker compose -v -f build/docker-compose.yaml down
+	sudo docker compose -v -f build/docker-compose.yaml down
 
 .PHONY: clean
 clean:
