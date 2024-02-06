@@ -25,6 +25,9 @@ compose-up: build-image
 compose-down:
 	sudo docker compose -v -f build/docker-compose.yaml down
 
+.PHONY: mysql
+mysql:
+	sudo docker run -d --rm -p 3306:3306 -e MYSQL_USER=web -e MYSQL_PASSWORD=pass -e MYSQL_ALLOW_EMPTY_PASSWORD=yes mysql:8.0-bullseye 
 .PHONY: clean
 clean:
 	go clean
