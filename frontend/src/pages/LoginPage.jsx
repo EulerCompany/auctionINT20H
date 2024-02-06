@@ -19,6 +19,8 @@ export const LoginPage = () => {
     }}
     onFinish={onFinish}>
 
+    <h1 className='w-full text-center' >Sign In</h1>
+
     <Form.Item
       name="username"
       rules={[

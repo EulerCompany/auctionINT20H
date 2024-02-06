@@ -17,7 +17,7 @@ export const RegistrationPage = () => {
       remember: true,
     }}
     onFinish={onFinish}>
-
+    <h1 className='w-full text-center' >Registration</h1>
     <Form.Item
       name="username"
       rules={[
@@ -64,7 +64,7 @@ export const RegistrationPage = () => {
       <Button type="primary" htmlType="submit" className="login-form-button w-full">
         Register me
       </Button>
-      Allready have an acoount? <NavLink className="login-form-forgot" to={'/registration'}> Sign In now</NavLink>
+      Allready have an acoount? <NavLink className="login-form-forgot" to={'/login'}> Sign In now</NavLink>
     </Form.Item>
   </Form>
   </div>
