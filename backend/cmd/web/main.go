@@ -15,7 +15,7 @@ type application struct {
 
 func main() {
 	addr := flag.String("addr", ":8080", "HTTP network address")
-	dsn := flag.String("dsn", "root@/auction", "MySQL DSN")
+    dsn := flag.String("dsn", "web:pass@tcp(db)/auction", "MySQL DSN")
 
 	flag.Parse()
 	db, err := openDB(*dsn)
