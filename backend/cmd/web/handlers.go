@@ -52,7 +52,7 @@ func (app *application) signupUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	resp := make(map[string]string)
 	resp["token"] = tokenStr
-	resp["message"] = "Logged in succesfully!"
+	resp["message"] = "Signed up successfully!"
 
 	jsonResp, err := json.Marshal(resp)
 
