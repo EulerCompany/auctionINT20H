@@ -9,7 +9,7 @@ export const RegistrationPage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   // const checkIsAuth = useSelector(isAuth)
-  const checkIsAuth = true
+  const checkIsAuth = false
 
 
 
@@ -32,7 +32,7 @@ export const RegistrationPage = () => {
     if (checkIsAuth) {
       navigate('/')
     }
-  }, [status, checkIsAuth, navigate, openNotification])
+  }, [status, checkIsAuth, navigate])
 
   const [api] = notification.useNotification();
   const [form] = Form.useForm();

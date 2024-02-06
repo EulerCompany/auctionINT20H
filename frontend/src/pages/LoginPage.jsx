@@ -11,7 +11,7 @@ export const LoginPage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   // const checkIsAuth = useSelector(isAuth)
-  const checkIsAuth = true
+  const checkIsAuth = false
 
   const { status } = useSelector((state) => state.auth)
 
@@ -32,7 +32,7 @@ export const LoginPage = () => {
     if (checkIsAuth) {
       navigate('/')
     }
-  }, [status, checkIsAuth, navigate, openNotification])
+  }, [status, checkIsAuth, navigate])
 
   const [api] = notification.useNotification();
   const [form] = Form.useForm();
