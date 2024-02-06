@@ -23,8 +23,8 @@ export const MainLayout = ({ children }) => {
           alignItems: 'center',
         }}>
 
-        <div className="t text-white text-3xl"> 
-        <a href='/'> AUCTION 423 </a>
+        <div className="text-3xl"> 
+        <a className='text-white' href='/'> AUCTION 423 </a>
         </div>
 
         <Menu
