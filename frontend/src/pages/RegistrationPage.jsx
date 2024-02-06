@@ -11,8 +11,6 @@ export const RegistrationPage = () => {
 
   const checkIsAuth = useSelector(isAuth)
 
-
-
   const { status } = useSelector((state) => state.auth)
 
   const onFinish = (values) => {
