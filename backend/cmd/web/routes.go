@@ -45,5 +45,6 @@ func (app *application) routes() *chi.Mux {
 	mux.Post("/user/login", app.loginUser)
 	mux.Post("/user/signup", app.signupUser)
 
+    mux.Post("/auction/create", app.createAuction)
 	return mux
 }

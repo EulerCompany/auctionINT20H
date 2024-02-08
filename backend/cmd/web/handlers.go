@@ -98,3 +98,23 @@ func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonResp)
 }
+// TODO: where should validation go, service/controller????
+func (app *application) createAuction (w http.ResponseWriter, r *http.Request) {
+    log.Println("create auction executing")
+
+    var auction Auction
+    err := json.NewDecoder(r.Body).Decode(&auction)
+    if err != nil {
+        logErrorDumbExit(w, err)
+        return
+    }
+    log.Printf("Parsed %v\n", auction)
+
+    err = app.auction.CreateAuction(auction)
+    if err != nil {
+        logErrorDumbExit(w, err)
+        return
+    }
+    log.Println("finished executing create auction")
+    
+}
