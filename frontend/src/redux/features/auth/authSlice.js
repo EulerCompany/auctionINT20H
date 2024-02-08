@@ -83,9 +83,9 @@ export const authSlice = createSlice({
         })
         builder.addCase(registerUser.fulfilled, (state, action) => {
             state.isLoading = false
-            //state.status = action.payload.message
-            //state.user = action.payload.user
-            //state.token = action.payload.token
+            state.status = action.payload.message
+            state.user = action.payload.user
+            state.token = action.payload.token
         })
         builder.addCase(registerUser.rejected, (state, action) => {
             state.status = action.payload.message

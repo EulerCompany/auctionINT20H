@@ -24,13 +24,13 @@ export const RegistrationPage = () => {
   };
 
   useEffect(() => {
-    if (status) {
-      //openNotification('topRight')
-    }
     if (checkIsAuth) {
       navigate('/')
     }
-  }, [status, checkIsAuth, navigate])
+    if (status) {
+      openNotification('topRight')
+    }
+  }, [checkIsAuth, status, navigate])
 
   const [api] = notification.useNotification();
   const [form] = Form.useForm();

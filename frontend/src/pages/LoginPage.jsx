@@ -26,12 +26,12 @@ export const LoginPage = () => {
 
   useEffect(() => {
     if (status) {
-      //openNotification('topRight')
+      openNotification('topRight')
     }
     if (checkIsAuth) {
       navigate('/')
     }
-  }, [status, checkIsAuth, navigate])
+  }, [checkIsAuth, status, navigate])
 
   const [api] = notification.useNotification();
   const [form] = Form.useForm();
