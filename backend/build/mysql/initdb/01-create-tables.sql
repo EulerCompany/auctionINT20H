@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS auction (
     id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(255) NOT NULL,
     description VARCHAR(1024) NOT NULL,
-    start_price DECIMAL(13, 4) NOT NULL,
-    current_price DECIMAL(13, 4) NOT NULL DEFAULT (`start_price`),
+    start_price BIGINT UNSIGNED NOT NULL,
+    current_price BIGINT UNSIGNED NOT NULL DEFAULT (`start_price`),
     status VARCHAR(50),
     start_date DATETIME,
     end_date DATETIME

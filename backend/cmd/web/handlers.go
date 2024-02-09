@@ -26,7 +26,6 @@ func logErrorDumbExit(w http.ResponseWriter, err error) {
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
-
 func (app *application) signupUser(w http.ResponseWriter, r *http.Request) {
 	log.Println("signup user called")
 
@@ -98,23 +97,45 @@ func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonResp)
 }
+
 // TODO: where should validation go, service/controller????
-func (app *application) createAuction (w http.ResponseWriter, r *http.Request) {
-    log.Println("create auction executing")
+func (app *application) createAuction(w http.ResponseWriter, r *http.Request) {
+	log.Println("create auction executing")
 
-    var auction Auction
-    err := json.NewDecoder(r.Body).Decode(&auction)
-    if err != nil {
-        logErrorDumbExit(w, err)
-        return
-    }
-    log.Printf("Parsed %v\n", auction)
+	var auction Auction
+	err := json.NewDecoder(r.Body).Decode(&auction)
+	if err != nil {
+		logErrorDumbExit(w, err)
+		return
+	}
+	log.Printf("Parsed %v\n", auction)
 
-    err = app.auction.CreateAuction(auction)
-    if err != nil {
-        logErrorDumbExit(w, err)
-        return
-    }
-    log.Println("finished executing create auction")
+	err = app.auction.CreateAuction(auction)
+	if err != nil {
+		logErrorDumbExit(w, err)
+		return
+	}
+	log.Println("finished executing create auction")
+
+}
+
+func (app *application) getAllActive(w http.ResponseWriter, r *http.Request) {
+	log.Println("show all active executing")
+
+	resp, err := app.auction.GetAllActiveAuctions()
+	if err != nil {
+		logErrorDumbExit(w, err)
+		return
+	}
     
+	for i, auction := range resp {
+		log.Printf("auction %d = %v", i, auction)
+	}
+    data, err :=json.Marshal(resp)
+    if err != nil {
+        logErrorDumbExit(w, err)
+        return
+    }
+    w.Write(data)
+    fmt.Println(err)
 }
