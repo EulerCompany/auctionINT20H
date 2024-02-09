@@ -99,6 +99,7 @@ func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // TODO: where should validation go, service/controller????
+// TODO: link auction with the author, needs Max's changes
 func (app *application) createAuction(w http.ResponseWriter, r *http.Request) {
 	log.Println("create auction executing")
 

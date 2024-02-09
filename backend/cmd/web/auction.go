@@ -11,7 +11,8 @@ import (
 // TODO: how to declare images??
 type Auction struct {
 	Id           int
-	Title        string `json:"title"`
+	AuthorId     int
+    Title        string `json:"title"`
 	Description  string `json:"description"`
 	StartPrice   int64  `json:"start_price"`
 	CurrentPrice int64  `json:"current_price"`
@@ -21,7 +22,7 @@ type Auction struct {
 }
 
 type AuctionRepository interface {
-	CreateAuction(title, description string, startPrice int64) (int64, error)
+	CreateAuction(authorId int, title, description string, startPrice int64) (int64, error)
 	InsertAuctionImage() error
 	GetAllActiveAuctions() ([]Auction, error)
 }
@@ -34,10 +35,10 @@ func NewMySQLAuctionRepository(db *sql.DB) (*mysqlAuctionRepository, error) {
 	return &mysqlAuctionRepository{DB: db}, nil
 }
 
-func (r *mysqlAuctionRepository) CreateAuction(title, description string, startPrice int64) (int64, error) {
-	stmt := `INSERT INTO auction (title, description, start_price)
-    VALUES (?, ?, ?)`
-	result, err := r.DB.Exec(stmt, title, description, startPrice)
+func (r *mysqlAuctionRepository) CreateAuction(authorId int, title, description string, startPrice int64) (int64, error) {
+	stmt := `INSERT INTO auction (author_id, title, description, start_price)
+    VALUES (?, ?, ?, ?)`
+	result, err := r.DB.Exec(stmt, authorId, title, description, startPrice)
 	id, err := result.LastInsertId()
 	fmt.Printf("error at createAuction is %v\n", err)
 	fmt.Printf("Last inserted id: %d\n", id)
@@ -57,6 +58,7 @@ func (r *mysqlAuctionRepository) GetAllActiveAuctions() ([]Auction, error) {
 		var auction Auction
 		if err := rows.Scan(
 			&auction.Id,
+            &auction.AuthorId,
 			&auction.Title,
 			&auction.Description,
 			&auction.StartPrice,
@@ -85,7 +87,8 @@ func NewAuctionService(repo AuctionRepository) *AuctionService {
 }
 
 func (s *AuctionService) CreateAuction(auction Auction) error {
-	id, err := s.Repo.CreateAuction(auction.Title, auction.Description, auction.StartPrice)
+    // TODO: add author id
+    id, err := s.Repo.CreateAuction(1, auction.Title, auction.Description, auction.StartPrice)
 	log.Printf("created auction id: %d\n", id)
 	return err
 }
