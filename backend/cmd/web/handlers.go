@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 )
 
 type LoginData struct {
@@ -25,7 +26,6 @@ func logErrorDumbExit(w http.ResponseWriter, err error) {
 	log.Println(err)
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
-
 
 func (app *application) signupUser(w http.ResponseWriter, r *http.Request) {
 	log.Println("signup user called")
@@ -97,4 +97,37 @@ func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonResp)
+}
+
+func (app *application) getMe(w http.ResponseWriter, r *http.Request) {
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		http.Error(w, "Authorization header is missing", http.StatusUnauthorized)
+		return
+	}
+
+	// Extract the token from the Authorization header
+	authToken := strings.Split(authHeader, " ")
+	if len(authToken) != 2 || authToken[0] != "Bearer" {
+		http.Error(w, "Invalid authorization header format", http.StatusUnauthorized)
+		return
+	}
+	token := authToken[1]
+
+	feedName := r.Context().Value("token info").(map[string]string)
+
+	w.WriteHeader(http.StatusOK)
+	resp := make(map[string]string)
+	resp["user"] = feedName["username"]
+	resp["token"] = token
+
+	jsonResp, err := json.Marshal(resp)
+
+	if err != nil {
+		logErrorDumbExit(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonResp)
+
 }
