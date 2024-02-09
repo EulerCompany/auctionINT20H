@@ -11,6 +11,7 @@ import (
 
 type application struct {
 	user *UserModel
+    auction *AuctionService
 }
 
 func main() {
@@ -24,8 +25,12 @@ func main() {
 	}
 	defer db.Close()
 
+    auctionRepo, _ := NewMySQLAuctionRepository(db)
+    auctionService := NewAuctionService(auctionRepo)
+
 	app := &application{
 		user: &UserModel{db},
+        auction: auctionService,
     }
 
 	srv := &http.Server{

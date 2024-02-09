@@ -6,7 +6,7 @@ services:
       MYSQL_USER: web
       MYSQL_PASSWORD: pass
       MYSQL_DATABASE: auction
-      MYSQL_RANDOM_ROOT_PASSWORD: yes
+      MYSQL_ALLOW_EMPTY_PASSWORD: yes
     healthcheck:
       test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
       start_period: 5s
@@ -16,6 +16,8 @@ services:
     volumes:
       - ./mysql/initdb:/docker-entrypoint-initdb.d
       - mysql-data:/var/lib/mysql
+    ports:
+      - 3306:3306
   backend:
     image: auction-backend
     ports:

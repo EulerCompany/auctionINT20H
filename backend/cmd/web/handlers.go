@@ -131,3 +131,46 @@ func (app *application) getMe(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonResp)
 
 }
+
+// TODO: where should validation go, service/controller????
+// TODO: link auction with the author, needs Max's changes
+func (app *application) createAuction(w http.ResponseWriter, r *http.Request) {
+	log.Println("create auction executing")
+
+	var auction Auction
+	err := json.NewDecoder(r.Body).Decode(&auction)
+	if err != nil {
+		logErrorDumbExit(w, err)
+		return
+	}
+	log.Printf("Parsed %v\n", auction)
+
+	err = app.auction.CreateAuction(auction)
+	if err != nil {
+		logErrorDumbExit(w, err)
+		return
+	}
+	log.Println("finished executing create auction")
+
+}
+
+func (app *application) getAllActive(w http.ResponseWriter, r *http.Request) {
+	log.Println("show all active executing")
+
+	resp, err := app.auction.GetAllActiveAuctions()
+	if err != nil {
+		logErrorDumbExit(w, err)
+		return
+	}
+    
+	for i, auction := range resp {
+		log.Printf("auction %d = %v", i, auction)
+	}
+    data, err :=json.Marshal(resp)
+    if err != nil {
+        logErrorDumbExit(w, err)
+        return
+    }
+    w.Write(data)
+    fmt.Println(err)
+}

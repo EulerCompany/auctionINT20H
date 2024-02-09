@@ -37,7 +37,7 @@ func (m *UserModel) CreateUser(loginData LoginData) error {
 	}
 
     // TODO: how to properly handle check + create?
-    stmt := `SELECT name FROM users WHERE name = ?`
+    stmt := `SELECT name FROM user WHERE name = ?`
     row := m.DB.QueryRow(stmt, loginData.Name)
     _ = row.Scan(&name)
     
@@ -45,7 +45,7 @@ func (m *UserModel) CreateUser(loginData LoginData) error {
         return errors.New("user: user already exists")
     }
 
-	stmt = `INSERT INTO users (name, hashed_password, created)
+	stmt = `INSERT INTO user (name, hashed_password, created)
     VALUES (?, ?,  UTC_TIMESTAMP())`
 
 	_, err = m.DB.Exec(stmt, loginData.Name, string(hashedPassword))
@@ -57,7 +57,7 @@ func (m *UserModel) Authenticate(loginData LoginData) (int, error) {
 	var id int
 	var hashedPassword []byte
 
-	stmt := "SELECT id, hashed_password FROM users WHERE name = ? AND active = TRUE"
+	stmt := "SELECT id, hashed_password FROM user WHERE name = ? AND active = TRUE"
 	row := m.DB.QueryRow(stmt, loginData.Name)
 
     err := row.Scan(&id, &hashedPassword)
