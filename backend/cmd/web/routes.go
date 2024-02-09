@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -26,24 +28,34 @@ func TokenAuthMiddleware(next http.Handler) http.Handler {
 		}
 		token := authToken[1]
 
-        if err := verifyToken(token); err != nil {
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
+		userinfo, err := verifyToken(token)
+
+		if err != nil {
+			http.Error(w, "Invalid token 2", http.StatusUnauthorized)
 			return
 		}
 
+		contextReq := context.WithValue(r.Context(), "token info", userinfo)
+
 		// Token is valid, proceed to the next handler
-		next.ServeHTTP(w, r)
+		fmt.Println(userinfo)
+		next.ServeHTTP(w, r.WithContext(contextReq))
 	})
 }
 func (app *application) routes() *chi.Mux {
 	mux := chi.NewRouter()
 
 	// TODO: how to actually setup CORS for frontend????
-    corsMW := cors.AllowAll()
+	corsMW := cors.AllowAll()
 	mux.Use(corsMW.Handler)
-   //mux.Use(TokenAuthMiddleware)
+	//mux.Use(TokenAuthMiddleware)
 	mux.Post("/user/login", app.loginUser)
 	mux.Post("/user/signup", app.signupUser)
+
+	mux.Route("/get", func(mux chi.Router) {
+		mux.Use(TokenAuthMiddleware)
+		mux.Get("/me", app.getMe)
+	})
 
 	return mux
 }
