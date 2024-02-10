@@ -6,7 +6,7 @@ export const createAuction = createAsyncThunk(
     'auctions/createAuction', 
     async ({username, password}) => {
         try {
-            const { data } = await axios.post('/auction/create', {
+            const { data } = await axios.post('/auctions/create', {
                 username, 
                 password
             })

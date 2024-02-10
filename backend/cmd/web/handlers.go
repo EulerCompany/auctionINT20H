@@ -157,15 +157,15 @@ func (app *application) createAuction(w http.ResponseWriter, r *http.Request) {
 		app.JSONErrorResponse(w, err)
 		return
 	}
-    log.Printf("Parsed create auction payload: %v\n", auctionReq)
-    
-    resp, err := app.auction.CreateAuction(1, auctionReq)
+	log.Printf("Parsed create auction payload: %v\n", auctionReq)
+
+	resp, err := app.auction.CreateAuction(1, auctionReq)
 	if err != nil {
-        app.JSONErrorResponse(w, err)
+		app.JSONErrorResponse(w, err)
 		return
 	}
 
-    app.JSONResponse(w, http.StatusCreated, resp)
+	app.JSONResponse(w, http.StatusCreated, resp)
 }
 
 func (app *application) getActiveAuctions(w http.ResponseWriter, r *http.Request) {
@@ -243,21 +243,7 @@ func (app *application) getbets(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	namedBets := make([]BetData, len(bet_history))
-	for i, bet := range bet_history {
-		namedBets[i] = BetData{
-			UserId:    bet.UserId,
-			UserName:  app.user.Get(bet.UserId),
-			AuctionId: bet.AuctionId,
-			Bet:       bet.Bet,
-		}
-	}
-
-	for i, auction := range namedBets {
-		log.Printf("auction %d = %v", i, auction)
-
-	}
-	data, err := json.Marshal(namedBets)
+	data, err := json.Marshal(bet_history)
 	if err != nil {
 		logErrorDumbExit(w, err)
 		return
@@ -289,17 +275,17 @@ func (app *application) getActiveAuctionsByUser(w http.ResponseWriter, r *http.R
 }
 
 func (app *application) getAuctionBets(w http.ResponseWriter, r *http.Request) {
-    id, err := strconv.Atoi(chi.URLParam(r, "id"))
-    if err != nil {
-        app.JSONErrorResponse(w, err)
-        return
-    }
-    bets, err := app.bet.GetAllBetsByAuction(id)    
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		app.JSONErrorResponse(w, err)
+		return
+	}
+	bets, err := app.bet.GetAllBetsByAuction(id)
 
-    if err != nil {
-        app.JSONErrorResponse(w, err)
-        return
-    }
+	if err != nil {
+		app.JSONErrorResponse(w, err)
+		return
+	}
 
-    app.JSONResponse(w, http.StatusOK, bets)
+	app.JSONResponse(w, http.StatusOK, bets)
 }
