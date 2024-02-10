@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS auction_user (
 CREATE TABLE IF NOT EXISTS auction_bet (
     auction_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
-    bet DECIMAL(13, 4) NOT NULL,
+    bet BIGINT UNSIGNED NOT NULL,
     FOREIGN KEY (auction_id)
         REFERENCES auction(id),
     FOREIGN KEY (user_id)

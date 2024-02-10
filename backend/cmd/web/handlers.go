@@ -19,7 +19,7 @@ type LoginData struct {
 type BetData struct {
 	UserId    int
 	AuctionId int
-	Bet       float64 `json:"bet"`
+	Bet       int64 `json:"bet"`
 }
 
 func parseLoginData(r *http.Request) (LoginData, error) {
@@ -249,4 +249,20 @@ func (app *application) getActiveAuctionsByUser(w http.ResponseWriter, r *http.R
     }
     w.Write(data)
     fmt.Println(err)
+}
+
+func (app *application) getAuctionBets(w http.ResponseWriter, r *http.Request) {
+    id, err := strconv.Atoi(chi.URLParam(r, "id"))
+    if err != nil {
+        app.JSONErrorResponse(w, err)
+        return
+    }
+    bets, err := app.bet.GetAllBetsByAuction(id)    
+
+    if err != nil {
+        app.JSONErrorResponse(w, err)
+        return
+    }
+
+    app.JSONResponse(w, http.StatusOK, bets)
 }

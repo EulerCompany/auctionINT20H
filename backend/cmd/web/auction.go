@@ -40,7 +40,7 @@ type Auction struct {
 }
 
 type AuctionRepository interface {
-	CreateAuction(authorId int64, title, description string, startPrice int64) (int64, error)
+	CreateAuction(authorId int64, title, description string, startPrice int64, startDate, endDate time.Time) (int64, error)
 	GetAllActiveAuctions() ([]Auction, error)
 	GetAuctionById(auctionId int) (Auction, error)
 	UpdateCurrentPriceAuction(auction Auction) error
@@ -55,9 +55,10 @@ func NewMySQLAuctionRepository(db *sql.DB) (*mysqlAuctionRepository, error) {
 	return &mysqlAuctionRepository{DB: db}, nil
 }
 
-func (r *mysqlAuctionRepository) CreateAuction(authorId int64, title, description string, startPrice int64) (int64, error) {
-	stmt := `INSERT INTO auction (author_id, title, description, start_price) VALUES (?, ?, ?, ?)`
-	result, err := r.DB.Exec(stmt, authorId, title, description, startPrice)
+func (r *mysqlAuctionRepository) CreateAuction(authorId int64, title, description string, startPrice int64, startDate, endDate time.Time) (int64, error) {
+	log.Println("Creating new auction")
+	stmt := `INSERT INTO auction (author_id, title, description, start_price, status, start_date, end_date) VALUES (?, ?, ?, ?,'active', ?, ?)`
+	result, err := r.DB.Exec(stmt, authorId, title, description, startPrice, startDate, endDate)
 	id, err := result.LastInsertId()
 	fmt.Printf("error at createAuction is %v\n", err)
 	fmt.Printf("Last inserted id: %d\n", id)
@@ -194,8 +195,9 @@ func (s *AuctionService) CreateAuction(userId int64, auction CreateAuctionReques
 	if err := s.validateAuctionRequset(auction); err != nil {
 		return CreateAuctionResponse{}, err
 	}
+	log.Println("Validate")
 
-	id, err := s.Repo.CreateAuction(userId, auction.Title, auction.Description, auction.StartPrice)
+	id, err := s.Repo.CreateAuction(userId, auction.Title, auction.Description, auction.StartPrice, auction.StartDate, auction.EndDate)
 	if err != nil {
 		return CreateAuctionResponse{}, err
 	}
@@ -213,13 +215,13 @@ func (s *AuctionService) GetAllActiveAuctions() ([]Auction, error) {
 	return auctions, err
 }
 
-func (s *AuctionService) AcceptBet(auctionId int, bet float64) (Auction, error) {
+func (s *AuctionService) AcceptBet(auctionId int, bet int64) (Auction, error) {
 	log.Printf("Accepting bet\n")
 	auction, err := s.Repo.GetAuctionById(auctionId)
 	fmt.Printf("Accept bet for %v\n", auction)
 	fmt.Printf("Accept bet for id  %d\n", auction.Id)
-	if auction.CurrentPrice < int64(bet) {
-		auction.CurrentPrice = int64(bet)
+	if auction.CurrentPrice < bet {
+		auction.CurrentPrice = bet
 		err := s.Repo.UpdateCurrentPriceAuction(auction)
 		return auction, err
 	}
