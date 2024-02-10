@@ -7,8 +7,8 @@ import { fetchAllAuctions } from '../redux/features/auction/auctionSlice'
 const columns: TableProps<DataType>['columns'] = [
   {
     title: 'Title',
-    dataIndex: ['title' ],
-    render: (title, id) => <a href={"/auction/"}  >{title}</a>,
+    dataIndex: ['title', 'id' ],
+    render: (title) => <a href={"/auction/"}  >{title}</a>,
   },
 ];
 

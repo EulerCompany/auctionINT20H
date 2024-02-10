@@ -2,28 +2,45 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
-// TODO: how to declare images??
+type CreateAuctionRequest struct {
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	StartPrice  int64     `json:"start_price"`
+	StartDate   time.Time `json:"start_date"`
+	EndDate     time.Time `json:"end_date"`
+}
+
+type CreateAuctionResponse struct {
+	Id int64 `json:"auction_id"`
+}
+
+type UpdateAuctionRequest struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+}
+
 type Auction struct {
-	Id           int
-	AuthorId     int
-	Title        string       `json:"title"`
-	Description  string       `json:"description"`
-	StartPrice   int64        `json:"start_price"`
-	CurrentPrice int64        `json:"current_price"`
-	Status       string       `json:"status"`
-	StartDate    sql.NullTime `json:"start_date"`
-	EndDate      sql.NullTime `json:"end_date"`
+	Id           int64
+	AuthorId     int64
+	Title        string
+	Description  string
+	StartPrice   int64
+	CurrentPrice int64
+	Status       string
+	StartDate    sql.NullTime
+	EndDate      sql.NullTime
 }
 
 type AuctionRepository interface {
-	CreateAuction(authorId int, title, description string, startPrice int64) (int64, error)
-	InsertAuctionImage() error
+	CreateAuction(authorId int64, title, description string, startPrice int64, startDate, endDate time.Time) (int64, error)
 	GetAllActiveAuctions() ([]Auction, error)
 	GetAuctionById(auctionId int) (Auction, error)
 	UpdateCurrentPriceAuction(auction Auction) error
@@ -38,9 +55,10 @@ func NewMySQLAuctionRepository(db *sql.DB) (*mysqlAuctionRepository, error) {
 	return &mysqlAuctionRepository{DB: db}, nil
 }
 
-func (r *mysqlAuctionRepository) CreateAuction(authorId int, title, description string, startPrice int64) (int64, error) {
-	stmt := `INSERT INTO auction (author_id, title, description, start_price) VALUES (?, ?, ?, ?)`
-	result, err := r.DB.Exec(stmt, authorId, title, description, startPrice)
+func (r *mysqlAuctionRepository) CreateAuction(authorId int64, title, description string, startPrice int64, startDate, endDate time.Time) (int64, error) {
+	log.Println("Creating new auction")
+	stmt := `INSERT INTO auction (author_id, title, description, start_price, status, start_date, end_date) VALUES (?, ?, ?, ?,'active', ?, ?)`
+	result, err := r.DB.Exec(stmt, authorId, title, description, startPrice, startDate, endDate)
 	id, err := result.LastInsertId()
 	fmt.Printf("error at createAuction is %v\n", err)
 	fmt.Printf("Last inserted id: %d\n", id)
@@ -152,11 +170,43 @@ func NewAuctionService(repo AuctionRepository) *AuctionService {
 	return &AuctionService{repo}
 }
 
-func (s *AuctionService) CreateAuction(auction Auction) error {
-	// TODO: add author id
-	id, err := s.Repo.CreateAuction(1, auction.Title, auction.Description, auction.StartPrice)
-	log.Printf("created auction id: %d\n", id)
-	return err
+func (s *AuctionService) validateAuctionRequset(auction CreateAuctionRequest) error {
+
+	if len(auction.Title) == 0 {
+		return errors.New("title cannot be empty")
+	}
+	if len(auction.Description) == 0 {
+		return errors.New("description cannot be empty")
+	}
+	if auction.StartPrice <= 0 {
+		return errors.New("start price must be greater than zero")
+	}
+	if auction.StartDate.Before(time.Now()) {
+		return errors.New("start date must be in the future")
+	}
+	if auction.EndDate.Before(auction.StartDate) {
+		return errors.New("end date must be after start date")
+	}
+
+	return nil
+}
+
+func (s *AuctionService) CreateAuction(userId int64, auction CreateAuctionRequest) (CreateAuctionResponse, error) {
+	if err := s.validateAuctionRequset(auction); err != nil {
+		return CreateAuctionResponse{}, err
+	}
+	log.Println("Validate")
+
+	id, err := s.Repo.CreateAuction(userId, auction.Title, auction.Description, auction.StartPrice, auction.StartDate, auction.EndDate)
+	if err != nil {
+		return CreateAuctionResponse{}, err
+	}
+	return CreateAuctionResponse{Id: id}, nil
+}
+
+func (s *AuctionService) UpdateAuction(newAuction CreateAuctionRequest) error {
+
+	return nil
 }
 
 func (s *AuctionService) GetAllActiveAuctions() ([]Auction, error) {
@@ -165,13 +215,14 @@ func (s *AuctionService) GetAllActiveAuctions() ([]Auction, error) {
 	return auctions, err
 }
 
-func (s *AuctionService) AcceptBet(auctionId int, bet float64) (Auction, error) {
+
+func (s *AuctionService) AcceptBet(auctionId int, bet int64) (Auction, error) {
 	log.Printf("Accepting bet\n")
 	auction, err := s.Repo.GetAuctionById(auctionId)
-	fmt.Println("Accept bet for %v\n", auction)
-	fmt.Println("Accept bet for id  %d\n", auction.Id)
-	if auction.CurrentPrice < int64(bet) {
-		auction.CurrentPrice = int64(bet)
+	fmt.Printf("Accept bet for %v\n", auction)
+	fmt.Printf("Accept bet for id  %d\n", auction.Id)
+	if auction.CurrentPrice < bet {
+		auction.CurrentPrice = bet
 		err := s.Repo.UpdateCurrentPriceAuction(auction)
 		return auction, err
 	}
@@ -183,5 +234,4 @@ func (s *AuctionService) GetAllActiveAuctionsByUserId(userId int) ([]Auction, er
 	log.Printf("Calling get all active auctions\n")
 	auctions, err := s.Repo.GetAllActiveAuctionsByUserId(userId)
 	return auctions, err
-
 }
