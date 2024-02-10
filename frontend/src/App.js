@@ -12,7 +12,7 @@ function App() {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    // dispatch(getMe())
+    dispatch(getMe())
   }, [dispatch])
 
   return (
