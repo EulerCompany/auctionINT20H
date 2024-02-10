@@ -47,8 +47,8 @@ func (app *application) routes() *chi.Mux {
 	// TODO: how to actually setup CORS for frontend????
 	corsMW := cors.AllowAll()
 	mux.Use(corsMW.Handler)
-	mux.Post("/users/login", app.loginUser)
-	mux.Post("/users/signup", app.signupUser)
+	mux.Post("/auth/login", app.loginUser)
+	mux.Post("/auth/signup", app.signupUser)
 
 	mux.Route("/auth", func(mux chi.Router) {
 		mux.Use(TokenAuthMiddleware)
@@ -57,11 +57,13 @@ func (app *application) routes() *chi.Mux {
 
 	mux.Get("/auctions/active", app.getActiveAuctions)
 	mux.Get("/auctions/{id}/bets", app.getAuctionBets)
+    mux.Get("/auctions/{id}", app.getAuctionById)
 
 	mux.Route("/auctions", func(r chi.Router) {
 		r.Use(TokenAuthMiddleware)
 		r.Post("/create", app.createAuction)
 		r.Post("/{id}/makebet", app.makebet)
+        r.Patch("/{id}/update", app.updateAuction)
 	})
 
 	mux.Route("/users", func(r chi.Router) {

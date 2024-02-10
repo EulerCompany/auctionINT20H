@@ -8,11 +8,9 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-
 type Bet struct {
-  User    string `json:"user"`
- 	Bet     int64 `json:"bet"`
-
+	User string `json:"user"`
+	Bet  int64  `json:"bet"`
 }
 
 type BetRepository interface {

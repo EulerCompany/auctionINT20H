@@ -45,6 +45,7 @@ type AuctionRepository interface {
 	GetAuctionById(auctionId int) (Auction, error)
 	UpdateCurrentPriceAuction(auction Auction) error
 	GetAllActiveAuctionsByUserId(userId int) ([]Auction, error)
+	UpdateAuction(auctionId int64, title, description string) error
 }
 
 type mysqlAuctionRepository struct {
@@ -159,8 +160,13 @@ func (r *mysqlAuctionRepository) UpdateCurrentPriceAuction(auction Auction) erro
 	return err
 }
 
-func (r *mysqlAuctionRepository) InsertAuctionImage() error {
-	return nil
+func (r *mysqlAuctionRepository) UpdateAuction(auctionId int64, title, description string) error {
+	stmt := `UPDATE auction SET title = ?, description = ? 
+    WHERE id = ?`
+	result, err := r.DB.Exec(stmt,title, description, auctionId)
+	fmt.Printf("error at update auction is %v\n", err)
+	fmt.Printf("result at update auction is %v\n", result)
+	return err
 }
 
 type AuctionService struct {
@@ -205,9 +211,16 @@ func (s *AuctionService) CreateAuction(userId int64, auction CreateAuctionReques
 	return CreateAuctionResponse{Id: id}, nil
 }
 
-func (s *AuctionService) UpdateAuction(newAuction CreateAuctionRequest) error {
+func (s *AuctionService) UpdateAuction(auction Auction) error {
+	if len(auction.Title) == 0 {
+		return errors.New("title cannot be empty")
+	}
+	if len(auction.Description) == 0 {
+		return errors.New("description cannot be empty")
+	}
 
-	return nil
+	err := s.Repo.UpdateAuction(auction.Id, auction.Title, auction.Description)
+	return err
 }
 
 func (s *AuctionService) GetAllActiveAuctions() ([]Auction, error) {
