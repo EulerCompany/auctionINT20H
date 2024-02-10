@@ -17,11 +17,6 @@ export const createAuction = createAsyncThunk(
         } catch (error) {
             console.log(error)
         }
-}, {
-    pending: (state) => {},
-    rejected: (state, action) => {},
-    fulfilled: (state, action) => {},
-
 })
 
 export const fetchAllAuctions = createAsyncThunk(
@@ -37,14 +32,22 @@ export const fetchAllAuctions = createAsyncThunk(
             console.log(error)
         }
     }
-, { // why this isn't working?
-    pending: (state) => {
-    },
-    rejected: (state, action) => {
-    },
-    fulfilled: (state, action) => {
-    },
-})
+)
+
+export const fetchAllAuctionsByUserId = createAsyncThunk(
+    'auctions/fetchAllAuctionsByUserId',
+    async (id) => {
+        try {
+            const { data } = await axios.get(`/user/${id}/auction/active`)
+            // TODO: remove log
+            console.log(data)
+            return data
+            
+        } catch (error) {
+            console.log(error)
+        }
+    }
+)
 
 export const auctionSlice = createSlice({
     name: 'auctions',
@@ -64,10 +67,24 @@ export const auctionSlice = createSlice({
         builder.addCase(fetchAllAuctions.fulfilled, (state, action) => {
             console.log("fulfilled")
             state.auctions = action.payload
-            state.totalPages = action.payload
+            state.totalPages = 123
             state.loading = false
         })
         builder.addCase(fetchAllAuctions.rejected, (state, action) => {
+            console.log("rejected")
+            state.loading = false
+        })
+        builder.addCase(fetchAllAuctionsByUserId.pending, (state) => { 
+            console.log("pending.... at fetchall")
+            state.loading = true
+        })
+        builder.addCase(fetchAllAuctionsByUserId.fulfilled, (state, action) => {
+            console.log("fulfilled")
+            state.auctions = action.payload
+            state.totalPages = 123
+            state.loading = false
+        })
+        builder.addCase(fetchAllAuctionsByUserId.rejected, (state, action) => {
             console.log("rejected")
             state.loading = false
         })

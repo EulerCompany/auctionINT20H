@@ -25,6 +25,7 @@ type AuctionRepository interface {
 	CreateAuction(authorId int, title, description string, startPrice int64) (int64, error)
 	InsertAuctionImage() error
 	GetAllActiveAuctions() ([]Auction, error)
+    GetAllActiveAuctionsByUserId(userId int) ([]Auction, error)
 }
 
 type mysqlAuctionRepository struct {
@@ -74,6 +75,35 @@ func (r *mysqlAuctionRepository) GetAllActiveAuctions() ([]Auction, error) {
 	return auctions, nil
 }
 
+func (r *mysqlAuctionRepository) GetAllActiveAuctionsByUserId(userId int) ([]Auction, error) {
+	stmt := `SELECT * FROM auction WHERE status = 'active' and author_id = ?`
+	rows, err := r.DB.Query(stmt, userId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var auctions []Auction
+	for rows.Next() {
+		var auction Auction
+		if err := rows.Scan(
+			&auction.Id,
+            &auction.AuthorId,
+			&auction.Title,
+			&auction.Description,
+			&auction.StartPrice,
+			&auction.CurrentPrice,
+			&auction.Status,
+			&auction.StartDate,
+			&auction.EndDate); err != nil {
+			return nil, err
+		}
+		auctions = append(auctions, auction)
+	}
+
+	return auctions, nil
+}
+
 func (r *mysqlAuctionRepository) InsertAuctionImage() error {
 	return nil
 }
@@ -96,5 +126,11 @@ func (s *AuctionService) CreateAuction(auction Auction) error {
 func (s *AuctionService) GetAllActiveAuctions() ([]Auction, error) {
     log.Printf("Calling get all active auctions\n")
 	auctions, err := s.Repo.GetAllActiveAuctions()
+	return auctions, err
+}
+
+func (s *AuctionService) GetAllActiveAuctionsByUserId(userId int) ([]Auction, error) {
+    log.Printf("Calling get all active auctions\n")
+	auctions, err := s.Repo.GetAllActiveAuctionsByUserId(userId)
 	return auctions, err
 }
