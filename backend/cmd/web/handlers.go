@@ -229,29 +229,6 @@ func (app *application) makebet(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (app *application) getbets(w http.ResponseWriter, r *http.Request) {
-	auctionId, err := strconv.Atoi(chi.URLParam(r, "id"))
-
-	bet_history, err := app.bet.GetAllBetsByAuction(auctionId)
-	if err != nil {
-		logErrorDumbExit(w, err)
-		return
-	}
-
-	for i, auction := range bet_history {
-		log.Printf("auction %d = %v", i, auction)
-
-	}
-
-	data, err := json.Marshal(bet_history)
-	if err != nil {
-		logErrorDumbExit(w, err)
-		return
-	}
-	w.Write(data)
-	w.Header().Set("Content-Type", "application/json")
-}
-
 func (app *application) getActiveAuctionsByUser(w http.ResponseWriter, r *http.Request) {
 	log.Println("show all active by userId")
 
@@ -286,6 +263,59 @@ func (app *application) getAuctionBets(w http.ResponseWriter, r *http.Request) {
 		app.JSONErrorResponse(w, err)
 		return
 	}
+	if err != nil {
+		app.JSONErrorResponse(w, err)
+		return
+	}
 
 	app.JSONResponse(w, http.StatusOK, bets)
+}
+
+func (app *application) updateAuction(w http.ResponseWriter, r *http.Request) {
+    // TODO: add check for user, user must be author of auction to edit
+    id, err := strconv.Atoi(chi.URLParam(r, "id"))
+
+	if err != nil {
+		app.JSONErrorResponse(w, err)
+		return
+	}
+	var auctionUpdate UpdateAuctionRequest
+	err = decodeJSONBody(w, r, &auctionUpdate)
+
+	if err != nil {
+		app.JSONErrorResponse(w, err)
+		return
+	}
+	auction, err := app.auction.Repo.GetAuctionById(id)
+
+	if err != nil {
+		app.JSONErrorResponse(w, err)
+		return
+	}
+	auction.Title = auctionUpdate.Title
+	auction.Description = auctionUpdate.Description
+	err = app.auction.UpdateAuction(auction)
+	if err != nil {
+		app.JSONErrorResponse(w, err)
+		return
+	}
+
+	app.JSONResponse(w, http.StatusOK, map[string]string{"status": "updated"})
+}
+
+func (app *application) getAuctionById(w http.ResponseWriter, r *http.Request) {
+    id, err := strconv.Atoi(chi.URLParam(r, "id"))
+     
+	if err != nil {
+		app.JSONErrorResponse(w, err)
+		return
+	}
+    auction, err := app.auction.Repo.GetAuctionById(id)
+
+    if err != nil {
+		app.JSONErrorResponse(w, err)
+		return
+    }
+
+    app.JSONResponse(w, http.StatusOK, auction)
 }
