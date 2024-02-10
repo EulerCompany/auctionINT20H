@@ -215,6 +215,7 @@ func (s *AuctionService) GetAllActiveAuctions() ([]Auction, error) {
 	return auctions, err
 }
 
+
 func (s *AuctionService) AcceptBet(auctionId int, bet int64) (Auction, error) {
 	log.Printf("Accepting bet\n")
 	auction, err := s.Repo.GetAuctionById(auctionId)

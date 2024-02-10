@@ -10,8 +10,9 @@ import (
 
 
 type Bet struct {
-    User    string `json:"user"`
+  User    string `json:"user"`
  	Bet     int64 `json:"bet"`
+
 }
 
 type BetRepository interface {
@@ -58,7 +59,7 @@ func (r *mysqlBetRepository) GetAllBetsByAuction(auctionId int) ([]Bet, error) {
 			&bet.User,
 			&bet.Bet,
 		); err != nil {
-			return nil, err
+			return bets, err
 		}
 		bets = append(bets, bet)
 	}

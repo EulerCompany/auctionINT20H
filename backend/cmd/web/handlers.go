@@ -18,6 +18,7 @@ type LoginData struct {
 
 type BetData struct {
 	UserId    int
+	UserName  string
 	AuctionId int
 	Bet       int64 `json:"bet"`
 }
@@ -89,7 +90,7 @@ func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    id, err := app.user.Authenticate(loginData)
+	id, err := app.user.Authenticate(loginData)
 	if err != nil {
 		logErrorDumbExit(w, err)
 		return
@@ -105,7 +106,7 @@ func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
 	resp := make(map[string]interface{})
 	resp["token"] = tokenStr
 	resp["message"] = "Logged in succesfully!"
-    resp["userId"] = id
+	resp["userId"] = id
 	jsonResp, err := json.Marshal(resp)
 
 	if err != nil {
@@ -228,27 +229,63 @@ func (app *application) makebet(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (app *application) getbets(w http.ResponseWriter, r *http.Request) {
+	auctionId, err := strconv.Atoi(chi.URLParam(r, "id"))
+
+	bet_history, err := app.bet.GetAllBetsByAuction(auctionId)
+	if err != nil {
+		logErrorDumbExit(w, err)
+		return
+	}
+
+	for i, auction := range bet_history {
+		log.Printf("auction %d = %v", i, auction)
+
+	}
+
+	namedBets := make([]BetData, len(bet_history))
+	for i, bet := range bet_history {
+		namedBets[i] = BetData{
+			UserId:    bet.UserId,
+			UserName:  app.user.Get(bet.UserId),
+			AuctionId: bet.AuctionId,
+			Bet:       bet.Bet,
+		}
+	}
+
+	for i, auction := range namedBets {
+		log.Printf("auction %d = %v", i, auction)
+
+	}
+	data, err := json.Marshal(namedBets)
+	if err != nil {
+		logErrorDumbExit(w, err)
+		return
+	}
+	w.Write(data)
+	w.Header().Set("Content-Type", "application/json")
+}
 
 func (app *application) getActiveAuctionsByUser(w http.ResponseWriter, r *http.Request) {
 	log.Println("show all active by userId")
 
-    id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 	resp, err := app.auction.GetAllActiveAuctionsByUserId(id)
 	if err != nil {
 		logErrorDumbExit(w, err)
 		return
 	}
-    
+
 	for i, auction := range resp {
 		log.Printf("auction %d = %v", i, auction)
 	}
-    data, err :=json.Marshal(resp)
-    if err != nil {
-        logErrorDumbExit(w, err)
-        return
-    }
-    w.Write(data)
-    fmt.Println(err)
+	data, err := json.Marshal(resp)
+	if err != nil {
+		logErrorDumbExit(w, err)
+		return
+	}
+	w.Write(data)
+	fmt.Println(err)
 }
 
 func (app *application) getAuctionBets(w http.ResponseWriter, r *http.Request) {
