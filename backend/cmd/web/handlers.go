@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type LoginData struct {
@@ -72,7 +75,7 @@ func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = app.user.Authenticate(loginData)
+    id, err := app.user.Authenticate(loginData)
 	if err != nil {
 		logErrorDumbExit(w, err)
 		return
@@ -85,10 +88,10 @@ func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(tokenStr)
 
 	w.WriteHeader(http.StatusOK)
-	resp := make(map[string]string)
+	resp := make(map[string]interface{})
 	resp["token"] = tokenStr
 	resp["message"] = "Logged in succesfully!"
-
+    resp["userId"] = id
 	jsonResp, err := json.Marshal(resp)
 
 	if err != nil {
@@ -158,6 +161,29 @@ func (app *application) getAllActive(w http.ResponseWriter, r *http.Request) {
 	log.Println("show all active executing")
 
 	resp, err := app.auction.GetAllActiveAuctions()
+	if err != nil {
+		logErrorDumbExit(w, err)
+		return
+	}
+    
+	for i, auction := range resp {
+		log.Printf("auction %d = %v", i, auction)
+	}
+    data, err :=json.Marshal(resp)
+    if err != nil {
+        logErrorDumbExit(w, err)
+        return
+    }
+    w.Write(data)
+    fmt.Println(err)
+}
+
+
+func (app *application) getAllActiveByUserId(w http.ResponseWriter, r *http.Request) {
+	log.Println("show all active by userId")
+
+    id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	resp, err := app.auction.GetAllActiveAuctionsByUserId(id)
 	if err != nil {
 		logErrorDumbExit(w, err)
 		return

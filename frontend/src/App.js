@@ -4,6 +4,7 @@ import { ListingPage } from './pages/ListingPage.jsx'
 import { LoginPage } from './pages/LoginPage.jsx'
 import { RegistrationPage } from './pages/RegistrationPage.jsx'
 import { CreateAuctionPage } from './pages/CreateAuctionPage.jsx'
+import { UserListingPage } from './pages/UserListingPage.jsx'
 import { useDispatch } from 'react-redux'
 import { useEffect } from 'react'
 import { getMe } from './redux/features/auth/authSlice.js'
@@ -22,6 +23,7 @@ function App() {
       <Route path='login' element={ <LoginPage /> } />
       <Route path='registration' element={ <RegistrationPage /> } />
       <Route path='create' element={ <CreateAuctionPage/> } />
+      <Route path='user/:id/auctions' element = { <UserListingPage/> } />
     </Routes>
   </MainLayout>
 
