@@ -60,5 +60,6 @@ func (app *application) routes() *chi.Mux {
 
 	mux.Post("/auction/create", app.createAuction)
 	mux.Get("/auction/active", app.getAllActive)
+    mux.Get("/user/{id}/auction/active", app.getAllActiveByUserId)
 	return mux
 }

@@ -2,7 +2,7 @@ import { React, useState, useEffect } from 'react'
 import { Space, Table, Tag } from 'antd';
 import type { TableProps } from 'antd';
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchAllAuctions } from '../redux/features/auction/auctionSlice'
+import { fetchAllAuctionsByUserId } from '../redux/features/auction/auctionSlice'
 
 const columns: TableProps<DataType>['columns'] = [
   {
@@ -12,7 +12,7 @@ const columns: TableProps<DataType>['columns'] = [
   },
 ];
 
-export const ListingPage: React.FC = () => {
+export const UserListingPage: React.FC = () => {
     const loading = useSelector((state) => {
         console.log(state);
         return state.auction.loading
@@ -29,8 +29,11 @@ export const ListingPage: React.FC = () => {
     })
     const dispatch = useDispatch()
 
+    const userId = useSelector((state) => {
+        return state.auth.userId
+    });
     useEffect(() => {
-        dispatch(fetchAllAuctions());
+        dispatch(fetchAllAuctionsByUserId(userId));
     }, [dispatch])
     return (
         <Table

@@ -18,9 +18,14 @@ export function SliderComponent() {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
+    const userId = useSelector((state) => {
+        return state.auth.userId;
+    });
     if (!checkIsAuth) {
         return null
     }
+    
+
   return (
       <Sider
           collapsible
@@ -48,8 +53,8 @@ export function SliderComponent() {
                   label: <NavLink to={'/'} >All auctions</NavLink>,
                 },
                 {
-                  key: '/my-auctions',
-                  label: <NavLink to={'/my-auctions'} >My auctions</NavLink>,
+                    key: '/user/:id/auctions',
+                  label: <NavLink to={`/user/${userId}/auctions`} >My auctions</NavLink>,
               }],
           },
           ]}/>

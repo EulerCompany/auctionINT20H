@@ -2,15 +2,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axios from '../../../utils/axios'
 
-const initialState = {
-    user: null,
-    token: null,
-    isLoading: false,
-    status: null,
-}
-
 export const createAuction = createAsyncThunk(
-    'auction/createAuction', 
+    'auctions/createAuction', 
     async ({username, password}) => {
         try {
             const { data } = await axios.post('/auction/create', {
@@ -19,10 +12,6 @@ export const createAuction = createAsyncThunk(
             })
             // TODO: remove log
             console.log(data)
-            if(data.token) {
-                window.localStorage.setItem('token', data.token)
-            }
-
             return data
             
         } catch (error) {
@@ -30,34 +19,76 @@ export const createAuction = createAsyncThunk(
         }
 })
 
-export const auctionSlice = createSlice({
-    name: 'auction',
-    initialState,
-    reducers: {
-        logout: (state) => {
-            state.user = null
-            state.token = null
-            state.isLoading = false
-            state.status = null
+export const fetchAllAuctions = createAsyncThunk(
+    'auctions/fetchAllAuctions',
+    async () => {
+        try {
+            const { data } = await axios.get('/auction/active')
+            // TODO: remove log
+            console.log(data)
+            return data
+            
+        } catch (error) {
+            console.log(error)
         }
+    }
+)
+
+export const fetchAllAuctionsByUserId = createAsyncThunk(
+    'auctions/fetchAllAuctionsByUserId',
+    async (id) => {
+        try {
+            const { data } = await axios.get(`/user/${id}/auction/active`)
+            // TODO: remove log
+            console.log(data)
+            return data
+            
+        } catch (error) {
+            console.log(error)
+        }
+    }
+)
+
+export const auctionSlice = createSlice({
+    name: 'auctions',
+    initialState: {
+        loading: false,
+        pageSize: 10,
+        totalPages: 0,
+        auctions: []
+    },
+    reducers: {
     },
     extraReducers: builder => {
-        builder.addCase(createAuction.pending, (state) => {
-            state.isLoading = true
-            state.status = null
+        builder.addCase(fetchAllAuctions.pending, (state) => { 
+            console.log("pending.... at fetchall")
+            state.loading = true
         })
-        builder.addCase(createAuction.fulfilled, (state, action) => {
-            state.isLoading = false
-            state.status = action.payload.message
-            state.user = action.payload.user
-            state.token = action.payload.token
+        builder.addCase(fetchAllAuctions.fulfilled, (state, action) => {
+            console.log("fulfilled")
+            state.auctions = action.payload
+            state.totalPages = 123
+            state.loading = false
         })
-        builder.addCase(createAuction.rejected, (state, action) => {
-            state.status = action.payload.message
-            state.isLoading = false
+        builder.addCase(fetchAllAuctions.rejected, (state, action) => {
+            console.log("rejected")
+            state.loading = false
         })
-    },
-})
+        builder.addCase(fetchAllAuctionsByUserId.pending, (state) => { 
+            console.log("pending.... at fetchall")
+            state.loading = true
+        })
+        builder.addCase(fetchAllAuctionsByUserId.fulfilled, (state, action) => {
+            console.log("fulfilled")
+            state.auctions = action.payload
+            state.totalPages = 123
+            state.loading = false
+        })
+        builder.addCase(fetchAllAuctionsByUserId.rejected, (state, action) => {
+            console.log("rejected")
+            state.loading = false
+        })
+}})
 
 
 // Why do we need this?

@@ -27,6 +27,8 @@ type AuctionRepository interface {
 	GetAllActiveAuctions() ([]Auction, error)
 	GetAuctionById(auctionId int) (Auction, error)
 	UpdateCurrentPriceAuction(auction Auction) error
+  GetAllActiveAuctionsByUserId(userId int) ([]Auction, error)
+
 }
 
 type mysqlAuctionRepository struct {
@@ -102,6 +104,35 @@ func (r *mysqlAuctionRepository) GetAuctionById(auctionId int) (Auction, error) 
 	return auction, nil
 }
 
+func (r *mysqlAuctionRepository) GetAllActiveAuctionsByUserId(userId int) ([]Auction, error) {
+	stmt := `SELECT * FROM auction WHERE status = 'active' and author_id = ?`
+	rows, err := r.DB.Query(stmt, userId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var auctions []Auction
+	for rows.Next() {
+		var auction Auction
+		if err := rows.Scan(
+			&auction.Id,
+      &auction.AuthorId,
+			&auction.Title,
+			&auction.Description,
+			&auction.StartPrice,
+			&auction.CurrentPrice,
+			&auction.Status,
+			&auction.StartDate,
+			&auction.EndDate); err != nil {
+			return nil, err
+		}
+		auctions = append(auctions, auction)
+	}
+
+	return auctions, nil
+}
+
 func (r *mysqlAuctionRepository) UpdateCurrentPriceAuction(auction Auction) error {
 	stmt := `UPDATE auction SET current_price = ? WHERE id = ?`
 	result, err := r.DB.Exec(stmt, auction.CurrentPrice, auction.Id)
@@ -135,6 +166,7 @@ func (s *AuctionService) GetAllActiveAuctions() ([]Auction, error) {
 	return auctions, err
 }
 
+
 func (s *AuctionService) AcceptBet(auctionId int, bet float64) (Auction, error) {
 	log.Printf("Accepting bet\n")
 	auction, err := s.Repo.GetAuctionById(auctionId)
@@ -147,4 +179,10 @@ func (s *AuctionService) AcceptBet(auctionId int, bet float64) (Auction, error) 
 	}
 
 	return auction, err
+
+func (s *AuctionService) GetAllActiveAuctionsByUserId(userId int) ([]Auction, error) {
+    log.Printf("Calling get all active auctions\n")
+	auctions, err := s.Repo.GetAllActiveAuctionsByUserId(userId)
+	return auctions, err
+
 }
