@@ -8,15 +8,14 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+
 type Bet struct {
-	Id        int
-	UserId    int
-	AuctionId int
-	bet       float64 `json:"bet"`
+    User    string `json:"user"`
+ 	Bet     int64 `json:"bet"`
 }
 
 type BetRepository interface {
-	MakeBet(userId int, auctionId int, bet float64) (int64, error)
+	MakeBet(userId int, auctionId int, bet int64) (int64, error)
 	GetAllBetsByAuction(auctionId int) ([]Bet, error)
 }
 
@@ -28,11 +27,11 @@ func NewMySQLBetRepository(db *sql.DB) (*mysqlBetRepository, error) {
 	return &mysqlBetRepository{DB: db}, nil
 }
 
-func (r *mysqlBetRepository) MakeBet(userId int, auctionId int, bet float64) (int64, error) {
+func (r *mysqlBetRepository) MakeBet(userId int, auctionId int, bet int64) (int64, error) {
 	stmt := `INSERT INTO auction_bet (auction_id, user_id, bet) VALUES (?, ?, ?)`
 	fmt.Printf("Last inserted id: %d\n", auctionId)
 	fmt.Printf("Last inserted id: %d\n", userId)
-	fmt.Printf("Last inserted id: %f\n", bet)
+	fmt.Printf("Last inserted id: %d\n", bet)
 	result, err := r.DB.Exec(stmt, auctionId, userId, bet)
 	id, err := result.RowsAffected()
 	fmt.Printf("error at makeBet is %v\n", err)
@@ -41,7 +40,11 @@ func (r *mysqlBetRepository) MakeBet(userId int, auctionId int, bet float64) (in
 }
 
 func (r *mysqlBetRepository) GetAllBetsByAuction(auctionId int) ([]Bet, error) {
-	stmt := `SELECT * FROM auction_bet WHERE auctionId = ?`
+	stmt := `SELECT u.name, ab.bet
+    FROM auction_bet ab
+    LEFT JOIN user u
+        ON u.id = ab.user_id
+    WHERE auction_id = ?`
 	rows, err := r.DB.Query(stmt, auctionId)
 	if err != nil {
 		return nil, err
@@ -52,10 +55,8 @@ func (r *mysqlBetRepository) GetAllBetsByAuction(auctionId int) ([]Bet, error) {
 	for rows.Next() {
 		var bet Bet
 		if err := rows.Scan(
-			&bet.Id,
-			&bet.UserId,
-			&bet.AuctionId,
-			&bet.bet,
+			&bet.User,
+			&bet.Bet,
 		); err != nil {
 			return nil, err
 		}
@@ -82,6 +83,7 @@ func (s *BetService) MakeBet(bet BetData) error {
 
 func (s *BetService) GetAllBetsByAuction(auctionId int) ([]Bet, error) {
 	log.Printf("Calling get all bets by auction\n")
-	auctions, err := s.Repo.GetAllBetsByAuction(auctionId)
-	return auctions, err
+	bets, err := s.Repo.GetAllBetsByAuction(auctionId)
+
+	return bets, err
 }
