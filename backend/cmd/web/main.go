@@ -10,13 +10,14 @@ import (
 )
 
 type application struct {
-	user *UserModel
-    auction *AuctionService
+	user    *UserModel
+	auction *AuctionService
+	bet     *BetService
 }
 
 func main() {
 	addr := flag.String("addr", ":8080", "HTTP network address")
-    dsn := flag.String("dsn", "web:pass@tcp(db)/auction", "MySQL DSN")
+	dsn := flag.String("dsn", "web:pass@tcp(db)/auction", "MySQL DSN")
 
 	flag.Parse()
 	db, err := openDB(*dsn)
@@ -25,13 +26,16 @@ func main() {
 	}
 	defer db.Close()
 
-    auctionRepo, _ := NewMySQLAuctionRepository(db)
-    auctionService := NewAuctionService(auctionRepo)
+	auctionRepo, _ := NewMySQLAuctionRepository(db)
+	betRepo, _ := NewMySQLBetRepository(db)
+	auctionService := NewAuctionService(auctionRepo)
+	betService := NewBetService(betRepo)
 
 	app := &application{
-		user: &UserModel{db},
-        auction: auctionService,
-    }
+		user:    &UserModel{db},
+		auction: auctionService,
+		bet:     betService,
+	}
 
 	srv := &http.Server{
 		Addr:    *addr,

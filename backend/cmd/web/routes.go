@@ -52,9 +52,10 @@ func (app *application) routes() *chi.Mux {
 	mux.Post("/user/login", app.loginUser)
 	mux.Post("/user/signup", app.signupUser)
 
-	mux.Route("/get", func(mux chi.Router) {
+	mux.Route("/auth", func(mux chi.Router) {
 		mux.Use(TokenAuthMiddleware)
-		mux.Get("/me", app.getMe)
+		mux.Get("/", app.getMe)
+		mux.Get("/makebet/{id}", app.makebet)
 	})
 
 	mux.Post("/auction/create", app.createAuction)

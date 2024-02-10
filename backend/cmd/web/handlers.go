@@ -16,12 +16,26 @@ type LoginData struct {
 	Password string `json:"password"`
 }
 
+type BetData struct {
+	UserId    int
+	AuctionId int
+	Bet       float64 `json:"bet"`
+}
+
 func parseLoginData(r *http.Request) (LoginData, error) {
 	var ld LoginData
 	// TODO: add proper validation
 	err := json.NewDecoder(r.Body).Decode(&ld)
 
 	return ld, err
+}
+
+func parseBetData(r *http.Request) (BetData, error) {
+	var bd BetData
+	// TODO: add proper validation
+	err := json.NewDecoder(r.Body).Decode(&bd)
+
+	return bd, err
 }
 
 // TODO: temp function to just log errors and send 500 to client
@@ -165,17 +179,57 @@ func (app *application) getAllActive(w http.ResponseWriter, r *http.Request) {
 		logErrorDumbExit(w, err)
 		return
 	}
-    
+
 	for i, auction := range resp {
 		log.Printf("auction %d = %v", i, auction)
 	}
-    data, err :=json.Marshal(resp)
-    if err != nil {
-        logErrorDumbExit(w, err)
-        return
-    }
-    w.Write(data)
-    fmt.Println(err)
+	data, err := json.Marshal(resp)
+	if err != nil {
+		logErrorDumbExit(w, err)
+		return
+	}
+	w.Write(data)
+	fmt.Println(err)
+}
+
+func (app *application) makebet(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Making bet0")
+	feedName := r.Context().Value("token info").(map[string]string)
+	betData, err := parseBetData(r)
+	if err != nil {
+		logErrorDumbExit(w, err)
+		return
+	}
+	userId, err := app.user.GetIdByUsername(feedName["username"])
+
+	if err != nil {
+		logErrorDumbExit(w, err)
+		return
+	}
+
+	betData.UserId = userId
+	betData.AuctionId, err = strconv.Atoi(chi.URLParam(r, "id"))
+
+	fmt.Println("Making bet1")
+	fmt.Printf("result at update auction is %v\n", betData)
+	err = app.bet.MakeBet(betData)
+	fmt.Println("Making bet2")
+	auction, err := app.auction.AcceptBet(betData.AuctionId, betData.Bet)
+
+	w.WriteHeader(http.StatusOK)
+	resp := make(map[string]string)
+	resp["user"] = feedName["username"]
+	resp["auction"] = auction.Title
+
+	jsonResp, err := json.Marshal(resp)
+
+	if err != nil {
+		logErrorDumbExit(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonResp)
+
 }
 
 
