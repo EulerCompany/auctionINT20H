@@ -12,7 +12,6 @@ import (
 
 var ErrUserNotExists = errors.New("user not exists")
 
-
 type User struct {
 	ID             int
 	Name           string
@@ -26,24 +25,24 @@ type UserModel struct {
 }
 
 func NewUserModel(db *sql.DB) *UserModel {
-    return &UserModel{DB: db}
+	return &UserModel{DB: db}
 }
 
 func (m *UserModel) CreateUser(loginData LoginData) error {
 	var name string
-    hashedPassword, err := bcrypt.GenerateFromPassword([]byte(loginData.Password), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(loginData.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 
-    // TODO: how to properly handle check + create?
-    stmt := `SELECT name FROM user WHERE name = ?`
-    row := m.DB.QueryRow(stmt, loginData.Name)
-    _ = row.Scan(&name)
-    
-    if name != "" {
-        return errors.New("user: user already exists")
-    }
+	// TODO: how to properly handle check + create?
+	stmt := `SELECT name FROM user WHERE name = ?`
+	row := m.DB.QueryRow(stmt, loginData.Name)
+	_ = row.Scan(&name)
+
+	if name != "" {
+		return errors.New("user: user already exists")
+	}
 
 	stmt = `INSERT INTO user (name, hashed_password, created)
     VALUES (?, ?,  UTC_TIMESTAMP())`
@@ -60,9 +59,9 @@ func (m *UserModel) Authenticate(loginData LoginData) (int, error) {
 	stmt := "SELECT id, hashed_password FROM user WHERE name = ? AND active = TRUE"
 	row := m.DB.QueryRow(stmt, loginData.Name)
 
-    err := row.Scan(&id, &hashedPassword)
-    fmt.Println(err)
-    fmt.Println(hashedPassword)
+	err := row.Scan(&id, &hashedPassword)
+	fmt.Println(err)
+	fmt.Println(hashedPassword)
 	err = bcrypt.CompareHashAndPassword(hashedPassword, []byte(loginData.Password))
 
 	if err != nil {
@@ -74,4 +73,14 @@ func (m *UserModel) Authenticate(loginData LoginData) (int, error) {
 
 func (m *UserModel) Get(id int) (*User, error) {
 	return nil, nil
+}
+
+func (m *UserModel) GetIdByUsername(username string) (int, error) {
+	var id int
+	stmt := "SELECT id FROM user WHERE name = ? AND active = TRUE"
+	row := m.DB.QueryRow(stmt, username)
+	err := row.Scan(&id)
+	fmt.Println(err)
+
+	return id, nil
 }
