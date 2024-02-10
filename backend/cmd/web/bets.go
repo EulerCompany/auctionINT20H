@@ -9,10 +9,9 @@ import (
 )
 
 type Bet struct {
-	Id        int
-	UserId    int
 	AuctionId int
-	bet       float64 `json:"bet"`
+	UserId    int
+	Bet       float64 `json:"bet"`
 }
 
 type BetRepository interface {
@@ -41,7 +40,7 @@ func (r *mysqlBetRepository) MakeBet(userId int, auctionId int, bet float64) (in
 }
 
 func (r *mysqlBetRepository) GetAllBetsByAuction(auctionId int) ([]Bet, error) {
-	stmt := `SELECT * FROM auction_bet WHERE auctionId = ?`
+	stmt := `SELECT * FROM auction_bet WHERE auction_id = ?`
 	rows, err := r.DB.Query(stmt, auctionId)
 	if err != nil {
 		return nil, err
@@ -52,12 +51,11 @@ func (r *mysqlBetRepository) GetAllBetsByAuction(auctionId int) ([]Bet, error) {
 	for rows.Next() {
 		var bet Bet
 		if err := rows.Scan(
-			&bet.Id,
-			&bet.UserId,
 			&bet.AuctionId,
-			&bet.bet,
+			&bet.UserId,
+			&bet.Bet,
 		); err != nil {
-			return nil, err
+			return bets, err
 		}
 		bets = append(bets, bet)
 	}

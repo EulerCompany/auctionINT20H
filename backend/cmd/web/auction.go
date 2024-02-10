@@ -27,8 +27,7 @@ type AuctionRepository interface {
 	GetAllActiveAuctions() ([]Auction, error)
 	GetAuctionById(auctionId int) (Auction, error)
 	UpdateCurrentPriceAuction(auction Auction) error
-  GetAllActiveAuctionsByUserId(userId int) ([]Auction, error)
-
+	GetAllActiveAuctionsByUserId(userId int) ([]Auction, error)
 }
 
 type mysqlAuctionRepository struct {
@@ -117,7 +116,7 @@ func (r *mysqlAuctionRepository) GetAllActiveAuctionsByUserId(userId int) ([]Auc
 		var auction Auction
 		if err := rows.Scan(
 			&auction.Id,
-      &auction.AuthorId,
+			&auction.AuthorId,
 			&auction.Title,
 			&auction.Description,
 			&auction.StartPrice,
@@ -166,7 +165,6 @@ func (s *AuctionService) GetAllActiveAuctions() ([]Auction, error) {
 	return auctions, err
 }
 
-
 func (s *AuctionService) AcceptBet(auctionId int, bet float64) (Auction, error) {
 	log.Printf("Accepting bet\n")
 	auction, err := s.Repo.GetAuctionById(auctionId)
@@ -179,9 +177,10 @@ func (s *AuctionService) AcceptBet(auctionId int, bet float64) (Auction, error) 
 	}
 
 	return auction, err
+}
 
 func (s *AuctionService) GetAllActiveAuctionsByUserId(userId int) ([]Auction, error) {
-    log.Printf("Calling get all active auctions\n")
+	log.Printf("Calling get all active auctions\n")
 	auctions, err := s.Repo.GetAllActiveAuctionsByUserId(userId)
 	return auctions, err
 

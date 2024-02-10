@@ -71,8 +71,16 @@ func (m *UserModel) Authenticate(loginData LoginData) (int, error) {
 	return id, nil
 }
 
-func (m *UserModel) Get(id int) (*User, error) {
-	return nil, nil
+func (m *UserModel) Get(id int) string {
+	var username string
+	stmt := "SELECT name FROM user WHERE id = ? AND active = TRUE"
+	row := m.DB.QueryRow(stmt, id)
+	fmt.Println("errorDB")
+	err := row.Scan(&username)
+	fmt.Println("errorDB2")
+	fmt.Println(err)
+
+	return username
 }
 
 func (m *UserModel) GetIdByUsername(username string) (int, error) {
