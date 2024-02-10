@@ -149,29 +149,25 @@ func (app *application) getMe(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// TODO: where should validation go, service/controller????
-// TODO: link auction with the author, needs Max's changes
 func (app *application) createAuction(w http.ResponseWriter, r *http.Request) {
-	log.Println("create auction executing")
-
-	var auction Auction
-	err := json.NewDecoder(r.Body).Decode(&auction)
+	var auctionReq CreateAuctionRequest
+	err := decodeJSONBody(w, r, &auctionReq)
 	if err != nil {
-		logErrorDumbExit(w, err)
+		app.JSONErrorResponse(w, err)
 		return
 	}
-	log.Printf("Parsed %v\n", auction)
-
-	err = app.auction.CreateAuction(auction)
+    log.Printf("Parsed create auction payload: %v\n", auctionReq)
+    
+    resp, err := app.auction.CreateAuction(1, auctionReq)
 	if err != nil {
-		logErrorDumbExit(w, err)
+        app.JSONErrorResponse(w, err)
 		return
 	}
-	log.Println("finished executing create auction")
 
+    app.JSONResponse(w, http.StatusCreated, resp)
 }
 
-func (app *application) getAllActive(w http.ResponseWriter, r *http.Request) {
+func (app *application) getActiveAuctions(w http.ResponseWriter, r *http.Request) {
 	log.Println("show all active executing")
 
 	resp, err := app.auction.GetAllActiveAuctions()
@@ -233,7 +229,7 @@ func (app *application) makebet(w http.ResponseWriter, r *http.Request) {
 }
 
 
-func (app *application) getAllActiveByUserId(w http.ResponseWriter, r *http.Request) {
+func (app *application) getActiveAuctionsByUser(w http.ResponseWriter, r *http.Request) {
 	log.Println("show all active by userId")
 
     id, _ := strconv.Atoi(chi.URLParam(r, "id"))
