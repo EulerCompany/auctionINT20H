@@ -54,21 +54,19 @@ func (app *application) routes() *chi.Mux {
 		mux.Use(TokenAuthMiddleware)
 		mux.Get("/", app.getMe)
 	})
-    
-    
-    mux.Get("/auctions/active", app.getActiveAuctions)
-    mux.Get("/auctions/{id}/bets", app.getAuctionBets)
 
-    mux.Route("/auctions", func (r chi.Router) {
-        r.Use(TokenAuthMiddleware)
-        r.Post("/create", app.createAuction)
-        r.Post("/{id}/bet", app.makebet)
-    })
+	mux.Get("/auctions/active", app.getActiveAuctions)
+	mux.Get("/auctions/{id}/bets", app.getAuctionBets)
 
-    mux.Route("/users", func(r chi.Router) {
-       r.Get("/{id}/auction/active", app.getActiveAuctionsByUser) 
-    })
+	mux.Route("/auctions", func(r chi.Router) {
+		r.Use(TokenAuthMiddleware)
+		r.Post("/create", app.createAuction)
+		r.Post("/{id}/makebet", app.makebet)
+	})
+
+	mux.Route("/users", func(r chi.Router) {
+		r.Get("/{id}/auction/active", app.getActiveAuctionsByUser)
+	})
 
 	return mux
 }
-

@@ -101,7 +101,7 @@ func (r *mysqlAuctionRepository) GetAuctionById(auctionId int) (Auction, error) 
 		return Auction{}, err
 	}
 	defer rows.Close()
-	var auction Auction
+	var auctions Auction
 	for rows.Next() {
 		var auction Auction
 		if err := rows.Scan(
@@ -116,9 +116,10 @@ func (r *mysqlAuctionRepository) GetAuctionById(auctionId int) (Auction, error) 
 			&auction.EndDate); err != nil {
 			return auction, err
 		}
+		auctions = auction
 	}
-
-	return auction, nil
+	fmt.Println("HEEEEEy %d\n", auctionId)
+	return auctions, nil
 }
 
 func (r *mysqlAuctionRepository) GetAllActiveAuctionsByUserId(userId int) ([]Auction, error) {
@@ -214,7 +215,6 @@ func (s *AuctionService) GetAllActiveAuctions() ([]Auction, error) {
 	auctions, err := s.Repo.GetAllActiveAuctions()
 	return auctions, err
 }
-
 
 func (s *AuctionService) AcceptBet(auctionId int, bet int64) (Auction, error) {
 	log.Printf("Accepting bet\n")

@@ -6,7 +6,7 @@ import { isAuth } from '../redux/features/auth/authSlice'
 import { createAuction } from '../redux/features/auction/auctionSlice'
 import { HeaderComponent } from '../components/HeaderComponent.jsx'
 
-import type { GetProp, UploadFile, UploadProps } from 'antd';
+import { GetProp, UploadFile, UploadProps } from 'antd';
 
 
 import React, { useState } from 'react';

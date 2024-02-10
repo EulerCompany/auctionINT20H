@@ -28,7 +28,7 @@ export const loginUser = createAsyncThunk(
     async ({username, password}) => {
         try {
             
-            const { data } = await axios.post('/user/login', {
+            const { data } = await axios.post('/users/login', {
                 username,
                 password,
             })
