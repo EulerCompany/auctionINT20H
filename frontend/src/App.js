@@ -8,6 +8,7 @@ import { UserListingPage } from './pages/UserListingPage.jsx'
 import { useDispatch } from 'react-redux'
 import { useEffect } from 'react'
 import { getMe } from './redux/features/auth/authSlice.js'
+import { AuctionPage } from './pages/AuctionPage.jsx'
 
 function App() {
   const dispatch = useDispatch()
@@ -24,6 +25,7 @@ function App() {
       <Route path='registration' element={ <RegistrationPage /> } />
       <Route path='create' element={ <CreateAuctionPage/> } />
       <Route path='user/:id/auctions' element = { <UserListingPage/> } />
+      <Route path='/auction/:id' element = { <AuctionPage/> } />
     </Routes>
   </MainLayout>
 

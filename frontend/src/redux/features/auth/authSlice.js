@@ -6,7 +6,7 @@ export const registerUser = createAsyncThunk(
     'auth/registerUser', 
     async ({username, password}) => {
         try {
-            const { data } = await axios.post('/user/signup', {
+            const { data } = await axios.post('/auth/signup', {
                 username, 
                 password
             })
@@ -28,7 +28,7 @@ export const loginUser = createAsyncThunk(
     async ({username, password}) => {
         try {
             
-            const { data } = await axios.post('/users/login', {
+            const { data } = await axios.post('/auth/login', {
                 username,
                 password,
             })

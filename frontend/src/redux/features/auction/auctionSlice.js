@@ -4,11 +4,14 @@ import axios from '../../../utils/axios'
 
 export const createAuction = createAsyncThunk(
     'auctions/createAuction', 
-    async ({username, password}) => {
+    async ({title, description, start_price, start_date, end_date}) => {
         try {
             const { data } = await axios.post('/auctions/create', {
-                username, 
-                password
+                title, 
+                description, 
+                start_price, 
+                start_date, 
+                end_date,
             })
             // TODO: remove log
             console.log(data)
@@ -23,8 +26,7 @@ export const fetchAllAuctions = createAsyncThunk(
     'auctions/fetchAllAuctions',
     async () => {
         try {
-            const { data } = await axios.get('/auction/active')
-            // TODO: remove log
+            const { data } = await axios.get('/auctions/active')
             console.log(data)
             return data
             
@@ -38,7 +40,7 @@ export const fetchAllAuctionsByUserId = createAsyncThunk(
     'auctions/fetchAllAuctionsByUserId',
     async (id) => {
         try {
-            const { data } = await axios.get(`/user/${id}/auction/active`)
+            const { data } = await axios.get(`/users/${id}/auction/active`)
             // TODO: remove log
             console.log(data)
             return data
@@ -67,13 +69,15 @@ export const auctionSlice = createSlice({
         builder.addCase(fetchAllAuctions.fulfilled, (state, action) => {
             console.log("fulfilled")
             state.auctions = action.payload
-            state.totalPages = 123
+            state.totalPages = 100
             state.loading = false
         })
         builder.addCase(fetchAllAuctions.rejected, (state, action) => {
             console.log("rejected")
             state.loading = false
         })
+
+
         builder.addCase(fetchAllAuctionsByUserId.pending, (state) => { 
             console.log("pending.... at fetchall")
             state.loading = true
