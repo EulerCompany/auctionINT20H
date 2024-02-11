@@ -38,19 +38,6 @@ export const fetchAllAuctions = createAsyncThunk(
     }
 )
 
-export const fetchAuctionPhotos = createAsyncThunk(
-    'auctions/fetchAuctionPhotos',
-    async (id) => {
-        try {
-            const { data } = await axios.get(`/auctions/${id}/photos`)
-            console.log(data)
-            return data
-            
-        } catch (error) {
-            console.log(error)
-        }
-    }
-)
 
 export const fetchAllAuctionsByUserId = createAsyncThunk(
     'auctions/fetchAllAuctionsByUserId',
@@ -67,17 +54,32 @@ export const fetchAllAuctionsByUserId = createAsyncThunk(
     }
 )
 
+export const fetchAuctionPhotos = createAsyncThunk(
+    'auctions/fetchAuctionPhotos',
+    async (id) => {
+        try {
+            const { data } = await axios.get(`/auctions/${id}/photos`)
+            console.log(data)
+            return data
+
+        } catch (error) {
+            console.log(error)
+        }
+    }
+)
 export const auctionSlice = createSlice({
     name: 'auctions',
     initialState: {
         loading: false,
         pageSize: 10,
         total: 0,
-        auctions: []
+        auctions: [],
+        photos: [],
     },
     reducers: {
     },
     extraReducers: builder => {
+        // all auctions
         builder.addCase(fetchAllAuctions.pending, (state) => { 
             console.log("pending.... at fetchall")
             state.loading = true
@@ -92,7 +94,7 @@ export const auctionSlice = createSlice({
             console.log("rejected")
             state.loading = false
         })
-
+        // auctions by user
         builder.addCase(fetchAllAuctionsByUserId.pending, (state) => { 
             console.log("pending.... at fetchall")
             state.loading = true
@@ -105,6 +107,22 @@ export const auctionSlice = createSlice({
         })
         builder.addCase(fetchAllAuctionsByUserId.rejected, (state, action) => {
             console.log("rejected")
+            state.loading = false
+        })
+
+        // photos
+        builder.addCase(fetchAuctionPhotos.pending, (state) => { 
+            console.log("pending auction photos")
+            state.loading = true
+        })
+        builder.addCase(fetchAuctionPhotos.fulfilled, (state, action) => {
+            console.log("fulfilled auction photos")
+            state.loading = false
+            const base64Images = action.payload.map(item => `data:image/png;base64,${item.img_base64}`);
+            state.photos = base64Images;
+        })
+        builder.addCase(fetchAuctionPhotos.rejected, (state, action) => {
+            console.log("rejected auction photos")
             state.loading = false
         })
 }})
