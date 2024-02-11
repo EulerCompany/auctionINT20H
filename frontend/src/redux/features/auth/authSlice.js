@@ -118,6 +118,7 @@ export const authSlice = createSlice({
             state.status = null
             state.user = action.payload?.user
             state.token = action.payload?.token
+            state.userId = action.payload?.userId
         })
         builder.addCase(getMe.rejected, (state, action) => {
             state.status = action.payload.message

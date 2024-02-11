@@ -88,7 +88,7 @@ const columns = [
       const dispatch = useDispatch()
 
     const userId = useSelector((state) => {
-        return state.auth.user
+        return state.auth.userId
     });
     useEffect(() => {
         dispatch(fetchAllAuctionsByUserId(userId));
