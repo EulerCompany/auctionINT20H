@@ -80,7 +80,6 @@ export const CreateAuctionPage = () => {
         console.log(values);
 
         dispatch(createAuction(values))
-        form.resetFields()
         } catch (error) {
             console.log(error)
         }
