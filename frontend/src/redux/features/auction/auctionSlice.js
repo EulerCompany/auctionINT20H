@@ -72,7 +72,7 @@ export const auctionSlice = createSlice({
     initialState: {
         loading: false,
         pageSize: 10,
-        totalPages: 0,
+        total: 0,
         auctions: []
     },
     reducers: {
@@ -85,14 +85,13 @@ export const auctionSlice = createSlice({
         builder.addCase(fetchAllAuctions.fulfilled, (state, action) => {
             console.log("fulfilled")
             state.auctions = action.payload
-            state.totalPages = 100
+            state.total = action.payload.length
             state.loading = false
         })
         builder.addCase(fetchAllAuctions.rejected, (state, action) => {
             console.log("rejected")
             state.loading = false
         })
-
 
         builder.addCase(fetchAllAuctionsByUserId.pending, (state) => { 
             console.log("pending.... at fetchall")
@@ -101,7 +100,7 @@ export const auctionSlice = createSlice({
         builder.addCase(fetchAllAuctionsByUserId.fulfilled, (state, action) => {
             console.log("fulfilled")
             state.auctions = action.payload
-            state.totalPages = 123
+            state.total = action.payload.length
             state.loading = false
         })
         builder.addCase(fetchAllAuctionsByUserId.rejected, (state, action) => {
