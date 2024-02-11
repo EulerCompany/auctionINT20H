@@ -9,6 +9,7 @@ import { useDispatch } from 'react-redux'
 import { useEffect } from 'react'
 import { getMe } from './redux/features/auth/authSlice.js'
 import { AuctionPage } from './pages/AuctionPage.jsx'
+import { EditPage } from './pages/EditPage.jsx'
 
 function App() {
   const dispatch = useDispatch()
@@ -26,6 +27,7 @@ function App() {
       <Route path='create' element={ <CreateAuctionPage/> } />
       <Route path='user/:id/auctions' element = { <UserListingPage/> } />
       <Route path='/auction/:id' element = { <AuctionPage/> } />
+      <Route path='/auction/:id/edit' element = { <EditPage/> } />
     </Routes>
   </MainLayout>
 
