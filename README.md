@@ -1,7 +1,7 @@
 # auctionINT20H
 Auction web application made as part of Hackaton INT20H test task
 
-#Requirements
+# Requirements
 * Go >=1.20
 * npm >=9.4.0
 * Docker >=24.0.6
