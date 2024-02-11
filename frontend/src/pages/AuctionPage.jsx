@@ -10,17 +10,23 @@ const { Meta } = Card;
 
 export function AuctionPage () {
   const { id } = useParams();
+
+
   const dispatch = useDispatch()
 
   useEffect(() => {
     dispatch(fetchAllAuctions());
   }, [dispatch])
 
-  const isOwner = false
 
   const auction = useSelector(state =>
     state.auction.auctions.find(auction => auction.Id.toString() === id)
   );
+
+  const isOwner = useSelector((state) => {
+    console.log(state);
+    return state.auth.userId === auction.AuthorId
+  })
 
   if (!auction) {
     console.log(id)

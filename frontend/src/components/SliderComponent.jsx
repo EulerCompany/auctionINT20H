@@ -19,7 +19,7 @@ export function SliderComponent() {
   } = theme.useToken();
 
     const userId = useSelector((state) => {
-        return state.auth.user;
+        return state.auth.userId;
     });
     if (!checkIsAuth) {
         return null

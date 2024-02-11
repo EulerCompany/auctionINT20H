@@ -76,14 +76,14 @@ func (r *mysqlAuctionRepository) CreateAuction(authorId int64, title, descriptio
 
 func (t *mysqlAuctionRepository) InsertAuctionPhotos(auctionId int64, photo []byte) error {
 	log.Println("Inserting auction photos")
-    log.Printf("Length of photo is: %d\n", len(photo))
+	log.Printf("Length of photo is: %d\n", len(photo))
 	stmt := `INSERT INTO auction_image (auction_id, img) VALUES (?, ?)`
 
 	result, err := t.DB.Exec(stmt, auctionId, photo)
-    if err != nil {
-        log.Printf("error at createAuction is %v\n", err)
-        return err
-    }
+	if err != nil {
+		log.Printf("error at createAuction is %v\n", err)
+		return err
+	}
 	id, err := result.LastInsertId()
 	fmt.Printf("Last inserted id: %d\n", id)
 	return err

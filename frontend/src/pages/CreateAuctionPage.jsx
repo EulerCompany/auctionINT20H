@@ -49,12 +49,15 @@ export const CreateAuctionPage = () => {
     };
 
     const onFinish = async (values) => {
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         const [startDayjs, endDayjs] = values.timeframe;
         const formattedStartDate = formatDayjsObjectToISO(startDayjs);
         const formattedEndDate = formatDayjsObjectToISO(endDayjs);
         delete values.timeframe;
         values.start_date = formattedStartDate;
         values.end_date = formattedEndDate;
+        try {
         const base64Files = await Promise.all(fileList.map(file => {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -73,15 +76,19 @@ export const CreateAuctionPage = () => {
         }));
 
         values.files = base64Files;
+
         console.log(values);
-        try {
-            dispatch(createAuction(values))
+
+        dispatch(createAuction(values))
+        form.resetFields()
         } catch (error) {
             console.log(error)
         }
         console.log('Received values of form: ', values);
         form.resetFields()
         };
+
+        const [isSubmitting, setIsSubmitting] = useState(false);
 
   return (
     <div>
@@ -130,7 +137,7 @@ export const CreateAuctionPage = () => {
         </Form.Item>
 
         <Form.Item label="Button">
-            <Button type='primary' htmlType="submit">Submit</Button>
+            <Button type='primary' htmlType="submit" disabled={isSubmitting}>Submit</Button>
         </Form.Item>
 
       </Form>
