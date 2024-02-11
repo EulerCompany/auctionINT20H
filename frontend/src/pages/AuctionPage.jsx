@@ -1,24 +1,26 @@
-import { React, useEffect } from 'react'
+import { React, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { EditOutlined, EllipsisOutlined, SettingOutlined } from '@ant-design/icons';
-import { Avatar, Button, Card, Image, Tag, InputNumber } from 'antd';
+import { Avatar, Button, Card, Image, Tag, InputNumber, List } from 'antd';
 import { BetHistoryComponent } from '../components/BetHistoryComponent';
 import { useDispatch } from 'react-redux'
-import { fetchAllAuctions, fetchAuctionPhotos } from '../redux/features/auction/auctionSlice'
+import { fetchAllAuctions, fetchAuctionPhotos, fetchBetsForAuction, makeBet  } from '../redux/features/auction/auctionSlice'
 const { Meta } = Card;
 
 export function AuctionPage() {
   const { id } = useParams();
 
-
   const dispatch = useDispatch()
+  const [bet_value, setBet_value] = useState(0)
 
   console.log("id is " + id);
   useEffect(() => {
     dispatch(fetchAllAuctions());
     if (id) {
+      dispatch(fetchBetsForAuction(id))
       dispatch(fetchAuctionPhotos(id));
+      
     }
   }, [dispatch, id])
 
@@ -27,20 +29,56 @@ export function AuctionPage() {
     state.auction.auctions.find(auction => auction.Id.toString() === id)
   );
 
+   
+
+
+
   const isOwner = useSelector((state) => {
     console.log(state);
+    if(auction) {
     return state.auth.userId === auction.AuthorId
+    }
+    
   })
 
   const photos = useSelector(state => {
     return state.auction.photos;
   });
 
+  const bets = useSelector((state) => {
+    console.log("bets:", state.auction.bets)
+    return state.auction.bets
+})
+
+
+
+
   if (!auction) {
     console.log(id)
     return <div>Auction not found</div>;
   }
+
+  
+
+  const onChange = (value) => {
+    setBet_value(value)
+    console.log('changed', value);
+  };
+
+  const make_bet = (bet_v) => {
+    console.log("iddddd", {'bet': bet_v})
+    try {
+      dispatch(makeBet({"id": id, "bet": bet_v}))
+    } catch (error) {
+      console.log(error)
+    }
+    console.log('Received values of form: ', bet_v);
+    window.location.reload(false);
+  };
   console.log(photos);
+
+  
+
 
   return (
     <div className=' content-center flex justify-center'>
@@ -67,10 +105,10 @@ export function AuctionPage() {
         actions={isOwner && [
           <EditOutlined key="edit" />,
           <Button className='w-3/4' type="primary"  >Stop Auction</Button>,
-        ] || !isOwner && [
-          <InputNumber min={auction.CurrentPrice + 1} addonAfter="$" defaultValue={auction.CurrentPrice + 1} />,
-          <Button className='w-3/4' type="primary"  >Make Bet</Button>,
-        ]}
+        ] || ((!isOwner && auction) && [
+          <InputNumber min={auction.CurrentPrice + 1} onChange={onChange} addonAfter="$"  />,
+          <Button className='w-3/4' type="primary" onClick={() => {make_bet(bet_value)}} >Make Bet</Button>,
+        ])}
       >
         <Meta
           title={<div>
@@ -108,7 +146,24 @@ export function AuctionPage() {
         />
 
       </Card>
-      <BetHistoryComponent />
+      {/* <BetHistoryComponent  /> */}
+      <div className='ml-10'>
+    <h2>Bet history</h2>
+    { bets && <List
+    className='w-1/12'
+    itemLayout="horizontal"
+    dataSource={bets}
+    renderItem={(item, index) => (
+      <List.Item>
+        <List.Item.Meta
+          avatar={<Avatar src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`} />}
+          title={<div>{item.user}</div>}
+          description={<div>{item.bet}$</div>}
+        />
+      </List.Item>
+    )}
+  />}
+  </div>
     </div>
   )
 }

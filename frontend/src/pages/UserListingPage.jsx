@@ -14,7 +14,7 @@ const columns = [
       dataIndex: ['Title'],
       key: 'Title',
       render: (text, record) => (
-          <NavLink to={`/auction/${record.Id}`}> {text}</NavLink>        
+          <NavLink onClick={() => {window.localStorage.setItem('auctionId', record.Id)}} to={`/auction/${record.Id}`}> {text}</NavLink>        
         ),
     },
     {
