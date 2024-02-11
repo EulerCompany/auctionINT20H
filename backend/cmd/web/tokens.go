@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -30,18 +29,15 @@ func verifyToken(tokenStr string) (map[string]string, error) {
 	})
 
 	if err != nil {
-		fmt.Println("er1")
 		return nil, err
 	}
 
 	if !token.Valid {
-		fmt.Println("er2")
 		return nil, errors.New("jwt: invalid token 1")
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		fmt.Println("er3")
 		return nil, errors.New("jwt: unable to assert type of claims")
 	}
 
@@ -49,7 +45,6 @@ func verifyToken(tokenStr string) (map[string]string, error) {
 	result := make(map[string]string)
 	if username, ok := claims["username"].(string); ok {
 		result["username"] = username
-		fmt.Println(result["username"])
 	} else {
 		return nil, errors.New("jwt: username claim is not a string")
 	}

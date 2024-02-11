@@ -3,8 +3,6 @@ package main
 import (
 	"database/sql"
 	"errors"
-	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -72,7 +70,6 @@ func NewMySQLAuctionRepository(db *sql.DB) (*mysqlAuctionRepository, error) {
 }
 
 func (r *mysqlAuctionRepository) GetImagesByAuctionId(auctionId int64) ([]Image, error) {
-	log.Println("Getting images by auction id")
 	stmt := `SELECT img FROM auction_image WHERE auction_id = ?`
 
 	rows, err := r.DB.Query(stmt, auctionId)
@@ -81,23 +78,21 @@ func (r *mysqlAuctionRepository) GetImagesByAuctionId(auctionId int64) ([]Image,
 	}
 	defer rows.Close()
 
-	var auctions []Image
+	var imgs []Image
 	for rows.Next() {
 		var img Image
 		if err := rows.Scan(
 			&img.Image); err != nil {
 			return nil, err
 		}
-		auctions = append(auctions, img)
+		imgs = append(imgs, img)
 	}
 
-	return auctions, nil
+	return imgs, nil
 }
 
 func (r *mysqlAuctionRepository) GetImageByAuctionIdAndImageId(auctionId, imageId int64) (Image, error) {
-	log.Println("Getting images by auction id")
 	stmt := `SELECT img FROM auction_image WHERE auction_id = ? AND id = ?`
-
 	row := r.DB.QueryRow(stmt, auctionId, imageId)
 	var img Image
 	err := row.Scan(&img.Image)
@@ -105,29 +100,28 @@ func (r *mysqlAuctionRepository) GetImageByAuctionIdAndImageId(auctionId, imageI
 }
 
 func (r *mysqlAuctionRepository) CreateAuction(authorId int64, title, description string, startPrice int64, startDate, endDate time.Time) (int64, error) {
-	log.Println("Creating new auction")
 	stmt := `INSERT INTO auction (author_id, title, description, start_price, status, start_date, end_date) VALUES (?, ?, ?, ?,'active', ?, ?)`
 	result, err := r.DB.Exec(stmt, authorId, title, description, startPrice, startDate, endDate)
-	id, err := result.LastInsertId()
-	log.Printf("error at createAuction is %v\n", err)
-	log.Printf("Last inserted id: %d\n", id)
+	if err != nil {
+        return 0, err
+    }
+    id, err := result.LastInsertId()
 	return id, err
 }
 
 func (t *mysqlAuctionRepository) InsertAuctionPhotos(auctionId int64, photos [][]byte) error {
-	log.Println("Inserting auction photos")
 	stmt := `INSERT INTO auction_image (auction_id, img) VALUES `
 	const rowSQL = "(?, ?)"
-	var inserts []string
+	
+    var inserts []string
 	vals := []interface{}{}
+
 	for i := 0; i < len(photos); i++ {
 		vals = append(vals, auctionId, photos[i])
 		inserts = append(inserts, rowSQL)
 	}
 	sqlInsert := stmt + strings.Join(inserts, ",")
-	log.Printf("Sql insert is: %s\n", sqlInsert)
 	_, err := t.DB.Exec(sqlInsert, vals...)
-	log.Printf("error at createAuction is %v\n", err)
 	return err
 }
 
@@ -184,7 +178,6 @@ func (r *mysqlAuctionRepository) GetAuctionById(auctionId int) (Auction, error) 
 		}
 		auctions = auction
 	}
-	fmt.Println("HEEEEEy %d\n", auctionId)
 	return auctions, nil
 }
 
@@ -219,18 +212,14 @@ func (r *mysqlAuctionRepository) GetAllActiveAuctionsByUserId(userId int) ([]Auc
 
 func (r *mysqlAuctionRepository) UpdateCurrentPriceAuction(auction Auction) error {
 	stmt := `UPDATE auction SET current_price = ? WHERE id = ?`
-	result, err := r.DB.Exec(stmt, auction.CurrentPrice, auction.Id)
-	fmt.Printf("error at update auction is %v\n", err)
-	fmt.Printf("result at update auction is %v\n", result)
+	_, err := r.DB.Exec(stmt, auction.CurrentPrice, auction.Id)
 	return err
 }
 
 func (r *mysqlAuctionRepository) UpdateAuction(auctionId int64, title, description string) error {
 	stmt := `UPDATE auction SET title = ?, description = ? 
     WHERE id = ?`
-	result, err := r.DB.Exec(stmt, title, description, auctionId)
-	fmt.Printf("error at update auction is %v\n", err)
-	fmt.Printf("result at update auction is %v\n", result)
+	_, err := r.DB.Exec(stmt, title, description, auctionId)
 	return err
 }
 
@@ -267,7 +256,6 @@ func (s *AuctionService) CreateAuction(userId int64, auction CreateAuctionReques
 	if err := s.validateAuctionRequset(auction); err != nil {
 		return CreateAuctionResponse{}, err
 	}
-	log.Println("Validate")
 
 	id, err := s.Repo.CreateAuction(userId, auction.Title, auction.Description, auction.StartPrice, auction.StartDate, auction.EndDate)
 	if err != nil {
@@ -278,8 +266,11 @@ func (s *AuctionService) CreateAuction(userId int64, auction CreateAuctionReques
 	for i, photo := range auction.Files {
 		photos[i] = photo.Base64
 	}
-	err = s.Repo.InsertAuctionPhotos(id, photos)
-	return CreateAuctionResponse{Id: id}, nil
+	if err = s.Repo.InsertAuctionPhotos(id, photos); err != nil {
+        return CreateAuctionResponse{}, err
+    }
+    
+    return CreateAuctionResponse{Id: id}, nil
 }
 
 func (s *AuctionService) UpdateAuction(auction Auction) error {
@@ -295,16 +286,12 @@ func (s *AuctionService) UpdateAuction(auction Auction) error {
 }
 
 func (s *AuctionService) GetAllActiveAuctions() ([]Auction, error) {
-	log.Printf("Calling get all active auctions\n")
 	auctions, err := s.Repo.GetAllActiveAuctions()
 	return auctions, err
 }
 
 func (s *AuctionService) AcceptBet(auctionId int, bet int64) (Auction, error) {
-	log.Printf("Accepting bet\n")
 	auction, err := s.Repo.GetAuctionById(auctionId)
-	fmt.Printf("Accept bet for %v\n", auction)
-	fmt.Printf("Accept bet for id  %d\n", auction.Id)
 	if auction.CurrentPrice < bet {
 		auction.CurrentPrice = bet
 		err := s.Repo.UpdateCurrentPriceAuction(auction)
@@ -315,7 +302,6 @@ func (s *AuctionService) AcceptBet(auctionId int, bet int64) (Auction, error) {
 }
 
 func (s *AuctionService) GetAllActiveAuctionsByUserId(userId int) ([]Auction, error) {
-	log.Printf("Calling get all active auctions\n")
 	auctions, err := s.Repo.GetAllActiveAuctionsByUserId(userId)
 	return auctions, err
 }
