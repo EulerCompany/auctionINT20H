@@ -2,10 +2,9 @@ import { React, useState, useEffect } from 'react'
 import { Space, Table, Tag, Button } from 'antd';
 import { EditOutlined, CloseCircleOutlined, SettingOutlined } from '@ant-design/icons';
 import { TableProps } from 'antd';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchAllAuctionsByUserId } from '../redux/features/auction/auctionSlice'
-
 
 
 const columns = [
@@ -53,11 +52,13 @@ const columns = [
       },
       {
         title: 'Actions',
-        dataIndex: 'Actions',
+        dataIndex: ['Title'],
         key: 'Actions',
-        render: ( Status ) => (
+        render: ( text, record ) => (
             <>
+                <NavLink to={`/auction/${record.Id}/edit`}> 
                 <EditOutlined key="edit"  className='mr-5'/>
+                </NavLink>
                 <CloseCircleOutlined />
             </>
           ),
@@ -65,8 +66,8 @@ const columns = [
     
   ];
   
+  
   export const UserListingPage = () => {
-      
   
       const loading = useSelector((state) => {
           return state.auction.loading

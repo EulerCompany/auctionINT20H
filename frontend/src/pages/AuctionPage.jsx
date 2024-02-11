@@ -1,5 +1,6 @@
 import { React, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { EditOutlined, EllipsisOutlined, SettingOutlined } from '@ant-design/icons';
 import { Avatar, Button, Card, Image, Tag, InputNumber, List } from 'antd';
@@ -10,6 +11,7 @@ const { Meta } = Card;
 
 export function AuctionPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const dispatch = useDispatch()
   const [bet_value, setBet_value] = useState(0)
@@ -77,7 +79,9 @@ export function AuctionPage() {
   };
   console.log(photos);
 
-  
+  const editHandler = () => {
+    navigate(`/auction/${id}/edit`)
+  }
 
 
   return (
@@ -103,7 +107,7 @@ export function AuctionPage() {
           </div>
         }
         actions={isOwner && [
-          <EditOutlined key="edit" />,
+          <EditOutlined onClick={editHandler} key="edit" />,
           <Button className='w-3/4' type="primary"  >Stop Auction</Button>,
         ] || ((!isOwner && auction) && [
           <InputNumber min={auction.CurrentPrice + 1} onChange={onChange} addonAfter="$"  />,

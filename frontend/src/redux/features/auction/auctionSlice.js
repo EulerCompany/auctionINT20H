@@ -24,6 +24,24 @@ export const createAuction = createAsyncThunk(
         }
 })
 
+export const updateAuction = createAsyncThunk(
+    'auctions/createAuction', 
+    async ({title, description, id}) => {
+
+        try {
+            const { data } = await axios.patch(`/auctions/${id}/update`, {
+                title, 
+                description
+            })
+            // TODO: remove log
+            console.log(data)
+            return data
+            
+        } catch (error) {
+            console.log(error)
+        }
+})
+
 export const fetchAllAuctions = createAsyncThunk(
     'auctions/fetchAllAuctions',
     async () => {
@@ -122,7 +140,7 @@ export const auctionSlice = createSlice({
             console.log("fulfilled")
             state.loading = false
             state.auctions = action.payload
-            state.total = 100
+            state.total = action.payload.length
             
         })
         builder.addCase(fetchAllAuctions.rejected, (state, action) => {
@@ -138,7 +156,7 @@ export const auctionSlice = createSlice({
             console.log("fulfilled")
             state.loading = false
             state.auctions = action.payload
-            state.total = 100
+            state.total = action.payload.length
             
         })
         builder.addCase(fetchAllAuctionsByUserId.rejected, (state, action) => {
