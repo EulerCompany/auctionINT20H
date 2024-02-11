@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -53,7 +54,7 @@ type AuctionRepository interface {
 	UpdateCurrentPriceAuction(auction Auction) error
 	GetAllActiveAuctionsByUserId(userId int) ([]Auction, error)
 	UpdateAuction(auctionId int64, title, description string) error
-	InsertAuctionPhotos(auctionId int64, photos []byte) error
+	InsertAuctionPhotos(auctionId int64, photos [][]byte) error
 }
 
 type mysqlAuctionRepository struct {
@@ -74,18 +75,20 @@ func (r *mysqlAuctionRepository) CreateAuction(authorId int64, title, descriptio
 	return id, err
 }
 
-func (t *mysqlAuctionRepository) InsertAuctionPhotos(auctionId int64, photo []byte) error {
+func (t *mysqlAuctionRepository) InsertAuctionPhotos(auctionId int64, photos [][]byte) error {
 	log.Println("Inserting auction photos")
-    log.Printf("Length of photo is: %d\n", len(photo))
-	stmt := `INSERT INTO auction_image (auction_id, img) VALUES (?, ?)`
-
-	result, err := t.DB.Exec(stmt, auctionId, photo)
-    if err != nil {
-        log.Printf("error at createAuction is %v\n", err)
-        return err
-    }
-	id, err := result.LastInsertId()
-	fmt.Printf("Last inserted id: %d\n", id)
+	stmt := `INSERT INTO auction_image (auction_id, img) VALUES `
+	const rowSQL = "(?, ?)"
+    var inserts []string
+	vals := []interface{}{}
+    for i := 0; i < len(photos); i++ {
+		vals = append(vals, auctionId, photos[i])
+		inserts = append(inserts, rowSQL)
+	}
+	sqlInsert := stmt + strings.Join(inserts, ",")
+    log.Printf("Sql insert is: %s\n", sqlInsert)
+	_, err := t.DB.Exec(sqlInsert, vals...)
+	log.Printf("error at createAuction is %v\n", err)
 	return err
 }
 
@@ -231,7 +234,12 @@ func (s *AuctionService) CreateAuction(userId int64, auction CreateAuctionReques
 	if err != nil {
 		return CreateAuctionResponse{}, err
 	}
-	err = s.Repo.InsertAuctionPhotos(id, auction.Files[0].Base64)
+	photos := make([][]byte, len(auction.Files))
+
+	for i, photo := range auction.Files {
+		photos[i] = photo.Base64
+	}
+	err = s.Repo.InsertAuctionPhotos(id, photos)
 	return CreateAuctionResponse{Id: id}, nil
 }
 
