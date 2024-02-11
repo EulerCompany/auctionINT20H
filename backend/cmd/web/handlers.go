@@ -46,8 +46,6 @@ func logErrorDumbExit(w http.ResponseWriter, err error) {
 }
 
 func (app *application) signupUser(w http.ResponseWriter, r *http.Request) {
-	log.Println("signup user called")
-
 	loginData, err := parseLoginData(r)
 	if err != nil {
 		logErrorDumbExit(w, err)
@@ -65,8 +63,6 @@ func (app *application) signupUser(w http.ResponseWriter, r *http.Request) {
 		logErrorDumbExit(w, err)
 		return
 	}
-	fmt.Println(tokenStr)
-
 	w.WriteHeader(http.StatusOK)
 	resp := make(map[string]string)
 	resp["token"] = tokenStr
@@ -83,7 +79,6 @@ func (app *application) signupUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
-	log.Println("login user called")
 	loginData, err := parseLoginData(r)
 	if err != nil {
 		logErrorDumbExit(w, err)
@@ -132,13 +127,13 @@ func (app *application) getMe(w http.ResponseWriter, r *http.Request) {
 	}
 	token := authToken[1]
 
-	feedName := r.Context().Value("token info").(map[string]string)
+	tokenMap := r.Context().Value("token info").(map[string]string)
 
-	userId, err := app.user.GetIdByUsername(feedName["username"])
+	userId, err := app.user.GetIdByUsername(tokenMap["username"])
 
 	w.WriteHeader(http.StatusOK)
 	resp := make(map[string]interface{})
-	resp["user"] = feedName["username"]
+	resp["user"] = tokenMap["username"]
 	resp["token"] = token
 	resp["userId"] = userId
 
@@ -161,13 +156,13 @@ func (app *application) createAuction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	feedName := r.Context().Value("token info").(map[string]string)
-	userId, err := app.user.GetIdByUsername(feedName["username"])
-
+	tokenMap := r.Context().Value("token info").(map[string]string)
+	userId, err := app.user.GetIdByUsername(tokenMap["username"])
 	if err != nil {
-		logErrorDumbExit(w, err)
+		app.JSONErrorResponse(w, err)
 		return
 	}
+
 	resp, err := app.auction.CreateAuction(int64(userId), auctionReq)
 	if err != nil {
 		app.JSONErrorResponse(w, err)
@@ -178,20 +173,14 @@ func (app *application) createAuction(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) getActiveAuctions(w http.ResponseWriter, r *http.Request) {
-	log.Println("show all active executing")
-
 	resp, err := app.auction.GetAllActiveAuctions()
 	if err != nil {
-		logErrorDumbExit(w, err)
+		app.JSONErrorResponse(w, err)
 		return
-	}
-
-	for i, auction := range resp {
-		log.Printf("auction %d = %v", i, auction)
 	}
 	data, err := json.Marshal(resp)
 	if err != nil {
-		logErrorDumbExit(w, err)
+		app.JSONErrorResponse(w, err)
 		return
 	}
 	w.Write(data)
@@ -199,32 +188,31 @@ func (app *application) getActiveAuctions(w http.ResponseWriter, r *http.Request
 }
 
 func (app *application) makebet(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Making bet0")
-	feedName := r.Context().Value("token info").(map[string]string)
+	tokenMap := r.Context().Value("token info").(map[string]string)
 	betData, err := parseBetData(r)
 	if err != nil {
 		logErrorDumbExit(w, err)
 		return
 	}
-	userId, err := app.user.GetIdByUsername(feedName["username"])
-
+	userId, err := app.user.GetIdByUsername(tokenMap["username"])
 	if err != nil {
-		logErrorDumbExit(w, err)
+		app.JSONErrorResponse(w, err)
 		return
 	}
 
 	betData.UserId = userId
 	betData.AuctionId, err = strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		app.JSONErrorResponse(w, err)
+		return
+	}
 
-	fmt.Println("Making bet1")
-	fmt.Printf("result at update auction is %v\n", betData)
 	err = app.bet.MakeBet(betData)
-	fmt.Println("Making bet2")
-	auction, err := app.auction.AcceptBet(betData.AuctionId, betData.Bet)
+    auction, err := app.auction.AcceptBet(betData.AuctionId, betData.Bet)
 
 	w.WriteHeader(http.StatusOK)
 	resp := make(map[string]string)
-	resp["user"] = feedName["username"]
+	resp["user"] = tokenMap["username"]
 	resp["auction"] = auction.Title
 
 	jsonResp, err := json.Marshal(resp)
@@ -239,8 +227,6 @@ func (app *application) makebet(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) getActiveAuctionsByUser(w http.ResponseWriter, r *http.Request) {
-	log.Println("show all active by userId %v\n", chi.URLParam(r, "id"))
-
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 
 	resp, err := app.auction.GetAllActiveAuctionsByUserId(id)
@@ -249,9 +235,6 @@ func (app *application) getActiveAuctionsByUser(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	for i, auction := range resp {
-		log.Printf("auction %d = %v", i, auction)
-	}
 	data, err := json.Marshal(resp)
 	if err != nil {
 		logErrorDumbExit(w, err)
@@ -282,7 +265,6 @@ func (app *application) getAuctionBets(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) updateAuction(w http.ResponseWriter, r *http.Request) {
-	// TODO: add check for user, user must be author of auction to edit
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 
 	if err != nil {

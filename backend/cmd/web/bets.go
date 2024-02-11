@@ -2,8 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
-	"log"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -28,13 +26,11 @@ func NewMySQLBetRepository(db *sql.DB) (*mysqlBetRepository, error) {
 
 func (r *mysqlBetRepository) MakeBet(userId int, auctionId int, bet int64) (int64, error) {
 	stmt := `INSERT INTO auction_bet (auction_id, user_id, bet) VALUES (?, ?, ?)`
-	fmt.Printf("Last inserted id: %d\n", auctionId)
-	fmt.Printf("Last inserted id: %d\n", userId)
-	fmt.Printf("Last inserted id: %d\n", bet)
 	result, err := r.DB.Exec(stmt, auctionId, userId, bet)
-	id, err := result.RowsAffected()
-	fmt.Printf("error at makeBet is %v\n", err)
-	fmt.Printf("Last inserted id: %d\n", id)
+    if err != nil {
+        return 0, err
+    }
+    id, err := result.RowsAffected()
 	return id, err
 }
 
@@ -74,15 +70,11 @@ func NewBetService(repo BetRepository) *BetService {
 }
 
 func (s *BetService) MakeBet(bet BetData) error {
-	fmt.Println("Making bet1.1")
-	id, err := s.Repo.MakeBet(bet.UserId, bet.AuctionId, bet.Bet)
-	log.Printf("created bet id: %d\n", id)
+	_, err := s.Repo.MakeBet(bet.UserId, bet.AuctionId, bet.Bet)
 	return err
 }
 
 func (s *BetService) GetAllBetsByAuction(auctionId int) ([]Bet, error) {
-	log.Printf("Calling get all bets by auction\n")
 	bets, err := s.Repo.GetAllBetsByAuction(auctionId)
-
 	return bets, err
 }

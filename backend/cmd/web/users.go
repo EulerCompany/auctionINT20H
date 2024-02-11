@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -35,7 +34,6 @@ func (m *UserModel) CreateUser(loginData LoginData) error {
 		return err
 	}
 
-	// TODO: how to properly handle check + create?
 	stmt := `SELECT name FROM user WHERE name = ?`
 	row := m.DB.QueryRow(stmt, loginData.Name)
 	_ = row.Scan(&name)
@@ -60,8 +58,6 @@ func (m *UserModel) Authenticate(loginData LoginData) (int, error) {
 	row := m.DB.QueryRow(stmt, loginData.Name)
 
 	err := row.Scan(&id, &hashedPassword)
-	fmt.Println(err)
-	fmt.Println(hashedPassword)
 	err = bcrypt.CompareHashAndPassword(hashedPassword, []byte(loginData.Password))
 
 	if err != nil {
@@ -75,11 +71,10 @@ func (m *UserModel) Get(id int) string {
 	var username string
 	stmt := "SELECT name FROM user WHERE id = ? AND active = TRUE"
 	row := m.DB.QueryRow(stmt, id)
-	fmt.Println("errorDB")
 	err := row.Scan(&username)
-	fmt.Println("errorDB2")
-	fmt.Println(err)
-
+	if err != nil {
+		return ""
+	}
 	return username
 }
 
@@ -88,7 +83,6 @@ func (m *UserModel) GetIdByUsername(username string) (int, error) {
 	stmt := "SELECT id FROM user WHERE name = ? AND active = TRUE"
 	row := m.DB.QueryRow(stmt, username)
 	err := row.Scan(&id)
-	fmt.Println(err)
 
-	return id, nil
+	return id, err
 }
