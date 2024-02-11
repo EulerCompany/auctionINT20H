@@ -24,12 +24,14 @@ To run fronted, `cd` into `frontend` directory and run `npm run start`.
 
 # Showcase
 ![index_page](./imgs/index.png)
-![login_page](./imgs/login.png)
-![signin_page](./imgs/signin.png)
+![login_page](./imgs/login_page.png)
+![signin_page](./imgs/signup_page.png)
 ![index_when_login](./imgs/index_when_login.png)
 ![create_auction](./imgs/create_auction.png)
 ![auction_page](./imgs/auction_page.png)
 ![auction_page_with_bets](./imgs/auction_age_with_bets.png)
+![edit_page_with_bets](./imgs/edit_page.png)
+![user_auctions_page](./imgs/user_auctions_page.png)
 
 # Points of Improvement
 * Functional Improvements
