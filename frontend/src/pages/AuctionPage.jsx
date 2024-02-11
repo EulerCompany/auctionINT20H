@@ -5,16 +5,20 @@ import { EditOutlined, EllipsisOutlined, SettingOutlined } from '@ant-design/ico
 import { Avatar, Button, Card, Image, Tag, InputNumber } from 'antd';
 import { BetHistoryComponent } from '../components/BetHistoryComponent';
 import { useDispatch } from 'react-redux'
-import { fetchAllAuctions } from '../redux/features/auction/auctionSlice'
+import { fetchAllAuctions, fetchAuctionPhotos } from '../redux/features/auction/auctionSlice'
 const { Meta } = Card;
 
 export function AuctionPage () {
   const { id } = useParams();
   const dispatch = useDispatch()
-
+    
+  console.log("id is " + id);
   useEffect(() => {
     dispatch(fetchAllAuctions());
-  }, [dispatch])
+      if (id) {
+          dispatch(fetchAuctionPhotos(id));
+      }
+  }, [dispatch, id])
 
   const isOwner = false
 

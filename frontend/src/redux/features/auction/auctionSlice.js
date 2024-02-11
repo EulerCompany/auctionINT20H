@@ -38,6 +38,20 @@ export const fetchAllAuctions = createAsyncThunk(
     }
 )
 
+export const fetchAuctionPhotos = createAsyncThunk(
+    'auctions/fetchAuctionPhotos',
+    async (id) => {
+        try {
+            const { data } = await axios.get(`/auctions/${id}/photos`)
+            console.log(data)
+            return data
+            
+        } catch (error) {
+            console.log(error)
+        }
+    }
+)
+
 export const fetchAllAuctionsByUserId = createAsyncThunk(
     'auctions/fetchAllAuctionsByUserId',
     async (id) => {

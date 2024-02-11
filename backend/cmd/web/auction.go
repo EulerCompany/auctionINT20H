@@ -47,6 +47,10 @@ type Auction struct {
 	EndDate      sql.NullTime
 }
 
+type Image struct {
+	Image []byte
+}
+
 type AuctionRepository interface {
 	CreateAuction(authorId int64, title, description string, startPrice int64, startDate, endDate time.Time) (int64, error)
 	GetAllActiveAuctions() ([]Auction, error)
@@ -55,6 +59,8 @@ type AuctionRepository interface {
 	GetAllActiveAuctionsByUserId(userId int) ([]Auction, error)
 	UpdateAuction(auctionId int64, title, description string) error
 	InsertAuctionPhotos(auctionId int64, photos [][]byte) error
+	GetImageByAuctionIdAndImageId(auctionId int64, imageId int64) (Image, error)
+	GetImagesByAuctionId(auctionId int64) ([]Image, error)
 }
 
 type mysqlAuctionRepository struct {
@@ -63,6 +69,39 @@ type mysqlAuctionRepository struct {
 
 func NewMySQLAuctionRepository(db *sql.DB) (*mysqlAuctionRepository, error) {
 	return &mysqlAuctionRepository{DB: db}, nil
+}
+
+func (r *mysqlAuctionRepository) GetImagesByAuctionId(auctionId int64) ([]Image, error) {
+	log.Println("Getting images by auction id")
+	stmt := `SELECT img FROM auction_image WHERE auction_id = ?`
+
+	rows, err := r.DB.Query(stmt, auctionId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var auctions []Image
+	for rows.Next() {
+		var img Image
+		if err := rows.Scan(
+			&img.Image); err != nil {
+			return nil, err
+		}
+		auctions = append(auctions, img)
+	}
+
+	return auctions, nil
+}
+
+func (r *mysqlAuctionRepository) GetImageByAuctionIdAndImageId(auctionId, imageId int64) (Image, error) {
+	log.Println("Getting images by auction id")
+	stmt := `SELECT img FROM auction_image WHERE auction_id = ? AND id = ?`
+
+	row := r.DB.QueryRow(stmt, auctionId, imageId)
+	var img Image
+	err := row.Scan(&img.Image)
+	return img, err
 }
 
 func (r *mysqlAuctionRepository) CreateAuction(authorId int64, title, description string, startPrice int64, startDate, endDate time.Time) (int64, error) {
@@ -79,14 +118,14 @@ func (t *mysqlAuctionRepository) InsertAuctionPhotos(auctionId int64, photos [][
 	log.Println("Inserting auction photos")
 	stmt := `INSERT INTO auction_image (auction_id, img) VALUES `
 	const rowSQL = "(?, ?)"
-    var inserts []string
+	var inserts []string
 	vals := []interface{}{}
-    for i := 0; i < len(photos); i++ {
+	for i := 0; i < len(photos); i++ {
 		vals = append(vals, auctionId, photos[i])
 		inserts = append(inserts, rowSQL)
 	}
 	sqlInsert := stmt + strings.Join(inserts, ",")
-    log.Printf("Sql insert is: %s\n", sqlInsert)
+	log.Printf("Sql insert is: %s\n", sqlInsert)
 	_, err := t.DB.Exec(sqlInsert, vals...)
 	log.Printf("error at createAuction is %v\n", err)
 	return err
@@ -279,4 +318,29 @@ func (s *AuctionService) GetAllActiveAuctionsByUserId(userId int) ([]Auction, er
 	log.Printf("Calling get all active auctions\n")
 	auctions, err := s.Repo.GetAllActiveAuctionsByUserId(userId)
 	return auctions, err
+}
+
+type ImageResponse struct {
+	Base64 []byte `json:"img_base64"`
+}
+
+func (s *AuctionService) GetImageByAuctionAndImageId(auctionId, imageId int64) (*ImageResponse, error) {
+	img, err := s.Repo.GetImageByAuctionIdAndImageId(auctionId, imageId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ImageResponse{Base64: img.Image}, nil
+}
+
+func (s *AuctionService) GetImagesByAuctionId(auctionId int64) ([]ImageResponse, error) {
+	imgs, err := s.Repo.GetImagesByAuctionId(auctionId)
+	if err != nil {
+		return nil, err
+	}
+	resp := make([]ImageResponse, len(imgs))
+	for i, img := range imgs {
+		resp[i].Base64 = img.Image
+	}
+	return resp, nil
 }

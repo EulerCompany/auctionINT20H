@@ -328,3 +328,40 @@ func (app *application) getAuctionById(w http.ResponseWriter, r *http.Request) {
 
 	app.JSONResponse(w, http.StatusOK, auction)
 }
+
+func (app *application) getImagesByAuctionId(w http.ResponseWriter, r *http.Request) {
+	auctionId, err := strconv.ParseInt(chi.URLParam(r, "auctionId"), 10, 64)
+	if err != nil {
+		app.JSONErrorResponse(w, err)
+		return
+	}
+
+	imgs, err := app.auction.GetImagesByAuctionId(auctionId)
+	if err != nil {
+		app.JSONErrorResponse(w, err)
+		return
+	}
+	app.JSONResponse(w, http.StatusOK, imgs)
+}
+
+func (app *application) getImageByAuctionImageId(w http.ResponseWriter, r *http.Request) {
+	imageId, err := strconv.ParseInt(chi.URLParam(r, "imageId"), 10, 64)
+	if err != nil {
+		app.JSONErrorResponse(w, err)
+		return
+	}
+	auctionId, err := strconv.ParseInt(chi.URLParam(r, "auctionId"), 10, 64)
+	if err != nil {
+		app.JSONErrorResponse(w, err)
+		return
+	}
+
+	img, err := app.auction.GetImageByAuctionAndImageId(auctionId, imageId)
+	if err != nil {
+		app.JSONErrorResponse(w, err)
+		return
+	}
+
+	app.JSONResponse(w, http.StatusOK, img)
+
+}
