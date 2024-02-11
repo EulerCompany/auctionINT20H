@@ -19,7 +19,7 @@ export function SliderComponent() {
   } = theme.useToken();
 
     const userId = useSelector((state) => {
-        return state.auth.userId;
+        return state.auth.user;
     });
     if (!checkIsAuth) {
         return null
@@ -36,7 +36,7 @@ export function SliderComponent() {
 
           <Menu
             mode="inline"
-            defaultSelectedKeys={window.location.pathname}
+            defaultSelectedKeys={[window.location.pathname]}
             selectedKeys={[window.location.pathname]}
             defaultOpenKeys={['auctions']}
             style={{
@@ -54,7 +54,7 @@ export function SliderComponent() {
                 },
                 {
                     key: '/user/:id/auctions',
-                  label: <NavLink to={`/user/${userId}/auctions`} >My auctions</NavLink>,
+                    label: <NavLink to={`/user/${userId}/auctions`} >My auctions</NavLink>,
               }],
           },
           ]}/>

@@ -232,7 +232,10 @@ func (app *application) makebet(w http.ResponseWriter, r *http.Request) {
 func (app *application) getActiveAuctionsByUser(w http.ResponseWriter, r *http.Request) {
 	log.Println("show all active by userId")
 
-	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	name := chi.URLParam(r, "id")
+
+	id, err := app.user.GetIdByUsername(name)
+
 	resp, err := app.auction.GetAllActiveAuctionsByUserId(id)
 	if err != nil {
 		logErrorDumbExit(w, err)
@@ -272,8 +275,8 @@ func (app *application) getAuctionBets(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) updateAuction(w http.ResponseWriter, r *http.Request) {
-    // TODO: add check for user, user must be author of auction to edit
-    id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	// TODO: add check for user, user must be author of auction to edit
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 
 	if err != nil {
 		app.JSONErrorResponse(w, err)
@@ -304,18 +307,18 @@ func (app *application) updateAuction(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) getAuctionById(w http.ResponseWriter, r *http.Request) {
-    id, err := strconv.Atoi(chi.URLParam(r, "id"))
-     
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+
 	if err != nil {
 		app.JSONErrorResponse(w, err)
 		return
 	}
-    auction, err := app.auction.Repo.GetAuctionById(id)
+	auction, err := app.auction.Repo.GetAuctionById(id)
 
-    if err != nil {
+	if err != nil {
 		app.JSONErrorResponse(w, err)
 		return
-    }
+	}
 
-    app.JSONResponse(w, http.StatusOK, auction)
+	app.JSONResponse(w, http.StatusOK, auction)
 }

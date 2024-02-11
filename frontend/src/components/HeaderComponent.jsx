@@ -18,6 +18,7 @@ export function HeaderComponent() {
   const logoutHandler = () => {
     dispatch(logout())
     window.localStorage.removeItem('token')
+    navigate('/')
   }
   const createAuctionHandler = () => {
     navigate('/create')
@@ -57,7 +58,7 @@ export function HeaderComponent() {
             alignItems: 'center',
             minWidth: 0,
           }}/> }
-         {checkIsAuth && <Button className='mr-2' type="primary" onClick={createAuctionHandler} >Create</Button>}
+         {checkIsAuth && <Button className='mr-2' type="primary" onClick={createAuctionHandler} >Create Auction</Button>}
          {checkIsAuth && <Button type="primary" onClick={logoutHandler} >Log out</Button>} 
       </Header>
     )

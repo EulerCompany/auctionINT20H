@@ -163,7 +163,7 @@ func (r *mysqlAuctionRepository) UpdateCurrentPriceAuction(auction Auction) erro
 func (r *mysqlAuctionRepository) UpdateAuction(auctionId int64, title, description string) error {
 	stmt := `UPDATE auction SET title = ?, description = ? 
     WHERE id = ?`
-	result, err := r.DB.Exec(stmt,title, description, auctionId)
+	result, err := r.DB.Exec(stmt, title, description, auctionId)
 	fmt.Printf("error at update auction is %v\n", err)
 	fmt.Printf("result at update auction is %v\n", result)
 	return err
