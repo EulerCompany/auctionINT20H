@@ -134,10 +134,13 @@ func (app *application) getMe(w http.ResponseWriter, r *http.Request) {
 
 	feedName := r.Context().Value("token info").(map[string]string)
 
+	userId, err := app.user.GetIdByUsername(feedName["username"])
+
 	w.WriteHeader(http.StatusOK)
-	resp := make(map[string]string)
+	resp := make(map[string]interface{})
 	resp["user"] = feedName["username"]
 	resp["token"] = token
+	resp["userId"] = userId
 
 	jsonResp, err := json.Marshal(resp)
 
@@ -236,11 +239,9 @@ func (app *application) makebet(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) getActiveAuctionsByUser(w http.ResponseWriter, r *http.Request) {
-	log.Println("show all active by userId")
+	log.Println("show all active by userId %v\n", chi.URLParam(r, "id"))
 
-	name := chi.URLParam(r, "id")
-
-	id, err := app.user.GetIdByUsername(name)
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 
 	resp, err := app.auction.GetAllActiveAuctionsByUserId(id)
 	if err != nil {
