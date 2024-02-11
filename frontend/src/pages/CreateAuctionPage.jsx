@@ -30,18 +30,6 @@ export const CreateAuctionPage = () => {
         return state.auth.userId;
     });
         
-    function callMe(values) {
-        console.log("I was called")
-        console.log(fileList);
-        fileList.forEach((file) => {
-            const reader = new FileReader();
-            reader.onload = e => {
-            console.log(e.target.result);
-            }
-            reader.readAsText(file);
-        })
-    }
-
     const [uploading, setUploading] = useState(false);
 
     const props = {
@@ -60,14 +48,32 @@ export const CreateAuctionPage = () => {
         listType:"picture-card",
     };
 
-    const onFinish = (values) => {
-        console.log(fileList);
+    const onFinish = async (values) => {
         const [startDayjs, endDayjs] = values.timeframe;
         const formattedStartDate = formatDayjsObjectToISO(startDayjs);
         const formattedEndDate = formatDayjsObjectToISO(endDayjs);
         delete values.timeframe;
         values.start_date = formattedStartDate;
         values.end_date = formattedEndDate;
+        const base64Files = await Promise.all(fileList.map(file => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                const base64 = reader.result.split(',')[1];
+                resolve({
+                    base64,
+                    name: file.name,
+                    type: file.type,
+                    size: file.size
+                    // Add more metadata properties as needed
+                });
+            };
+            reader.onerror = error => reject(error);            });
+        }));
+
+        values.files = base64Files;
+        console.log(values);
         try {
             dispatch(createAuction(values))
         } catch (error) {

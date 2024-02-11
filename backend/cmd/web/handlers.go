@@ -157,9 +157,15 @@ func (app *application) createAuction(w http.ResponseWriter, r *http.Request) {
 		app.JSONErrorResponse(w, err)
 		return
 	}
-	log.Printf("Parsed create auction payload: %v\n", auctionReq)
 
-	resp, err := app.auction.CreateAuction(1, auctionReq)
+	feedName := r.Context().Value("token info").(map[string]string)
+	userId, err := app.user.GetIdByUsername(feedName["username"])
+
+	if err != nil {
+		logErrorDumbExit(w, err)
+		return
+	}
+	resp, err := app.auction.CreateAuction(int64(userId), auctionReq)
 	if err != nil {
 		app.JSONErrorResponse(w, err)
 		return
