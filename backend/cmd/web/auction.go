@@ -10,12 +10,19 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+type Base64File struct {
+	Base64 []byte `json:"base64"`
+	Name   string `json:"name"`
+	Size   int    `json:"size"`
+	Type   string `json:"type"`
+}
 type CreateAuctionRequest struct {
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	StartPrice  int64     `json:"start_price"`
-	StartDate   time.Time `json:"start_date"`
-	EndDate     time.Time `json:"end_date"`
+	Title       string       `json:"title"`
+	Description string       `json:"description"`
+	StartPrice  int64        `json:"start_price"`
+	StartDate   time.Time    `json:"start_date"`
+	EndDate     time.Time    `json:"end_date"`
+	Files       []Base64File `json:"files"`
 }
 
 type CreateAuctionResponse struct {
@@ -46,6 +53,7 @@ type AuctionRepository interface {
 	UpdateCurrentPriceAuction(auction Auction) error
 	GetAllActiveAuctionsByUserId(userId int) ([]Auction, error)
 	UpdateAuction(auctionId int64, title, description string) error
+	InsertAuctionPhotos(auctionId int64, photos []byte) error
 }
 
 type mysqlAuctionRepository struct {
@@ -61,9 +69,24 @@ func (r *mysqlAuctionRepository) CreateAuction(authorId int64, title, descriptio
 	stmt := `INSERT INTO auction (author_id, title, description, start_price, status, start_date, end_date) VALUES (?, ?, ?, ?,'active', ?, ?)`
 	result, err := r.DB.Exec(stmt, authorId, title, description, startPrice, startDate, endDate)
 	id, err := result.LastInsertId()
-	fmt.Printf("error at createAuction is %v\n", err)
-	fmt.Printf("Last inserted id: %d\n", id)
+	log.Printf("error at createAuction is %v\n", err)
+	log.Printf("Last inserted id: %d\n", id)
 	return id, err
+}
+
+func (t *mysqlAuctionRepository) InsertAuctionPhotos(auctionId int64, photo []byte) error {
+	log.Println("Inserting auction photos")
+    log.Printf("Length of photo is: %d\n", len(photo))
+	stmt := `INSERT INTO auction_image (auction_id, img) VALUES (?, ?)`
+
+	result, err := t.DB.Exec(stmt, auctionId, photo)
+    if err != nil {
+        log.Printf("error at createAuction is %v\n", err)
+        return err
+    }
+	id, err := result.LastInsertId()
+	fmt.Printf("Last inserted id: %d\n", id)
+	return err
 }
 
 func (r *mysqlAuctionRepository) GetAllActiveAuctions() ([]Auction, error) {
@@ -208,6 +231,7 @@ func (s *AuctionService) CreateAuction(userId int64, auction CreateAuctionReques
 	if err != nil {
 		return CreateAuctionResponse{}, err
 	}
+	err = s.Repo.InsertAuctionPhotos(id, auction.Files[0].Base64)
 	return CreateAuctionResponse{Id: id}, nil
 }
 

@@ -4,7 +4,8 @@ import axios from '../../../utils/axios'
 
 export const createAuction = createAsyncThunk(
     'auctions/createAuction', 
-    async ({title, description, start_price, start_date, end_date}) => {
+    async ({title, description, start_price, start_date, end_date, files}) => {
+
         try {
             const { data } = await axios.post('/auctions/create', {
                 title, 
@@ -12,6 +13,7 @@ export const createAuction = createAsyncThunk(
                 start_price, 
                 start_date, 
                 end_date,
+                files
             })
             // TODO: remove log
             console.log(data)
