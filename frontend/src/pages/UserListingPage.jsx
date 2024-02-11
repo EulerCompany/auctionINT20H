@@ -69,7 +69,6 @@ const columns = [
       
   
       const loading = useSelector((state) => {
-          console.log(state);
           return state.auction.loading
       })
   
@@ -91,8 +90,10 @@ const columns = [
         return state.auth.userId
     });
     useEffect(() => {
-        dispatch(fetchAllAuctionsByUserId(userId));
-    }, [dispatch])
+        if(userId) {
+            dispatch(fetchAllAuctionsByUserId(userId));
+        }
+    }, [dispatch, userId])
     return (
         <div>
         <h2>Created auctions</h2>

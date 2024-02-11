@@ -69,8 +69,8 @@ export const ListingPage = () => {
         return state.auction.pageSize
     })
     
-    const totalPages = useSelector((state) => {
-        return state.auction.totalPages
+    const total = useSelector((state) => {
+        return state.auction.total
     })
 
     const dispatch = useDispatch()
@@ -89,7 +89,7 @@ export const ListingPage = () => {
             dataSource={auctions}
             pagination={{
                 pageSize: pageSize,
-                total: totalPages,
+                total: total,
             }}
         />
         </div>

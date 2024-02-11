@@ -13,6 +13,7 @@ const { Header, Footer, Content, Sider } = Layout;
 
 
 export function SliderComponent() {
+  const location = useLocation();
   const checkIsAuth = useSelector(isAuth)
   const {
     token: { colorBgContainer, borderRadiusLG },
@@ -36,8 +37,8 @@ export function SliderComponent() {
 
           <Menu
             mode="inline"
-            defaultSelectedKeys={[window.location.pathname]}
-            selectedKeys={[window.location.pathname]}
+            defaultSelectedKeys={[location.pathname]}
+            selectedKeys={[location.pathname]}
             defaultOpenKeys={['auctions']}
             style={{
               height: '100%',
@@ -53,7 +54,7 @@ export function SliderComponent() {
                   label: <NavLink to={'/'} >All auctions</NavLink>,
                 },
                 {
-                    key: '/user/:id/auctions',
+                    key: `/user/${userId}/auctions`,
                     label: <NavLink to={`/user/${userId}/auctions`} >My auctions</NavLink>,
               }],
           },
